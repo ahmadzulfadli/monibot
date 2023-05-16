@@ -1,0 +1,99 @@
+/* CSS for Fixed Table Header in index4.html */
+table{
+	margin-top: 20px;
+}
+.fixed-th {
+	
+	border-collapse: collapse;
+	box-shadow: 0 2px 3px 1px #ddd;
+	table-layout: fixed;
+	border:1px solid rgb(230, 229, 229);
+}
+.fixed-th thead {
+	background-color: #333;
+	color:#fff;
+	display: block;
+}
+/* make it scrolled */
+.fixed-th tbody {
+	display: block;
+	overflow-y: auto;
+	width: 100%;
+	max-height: 350px;
+	position: static;
+}
+table.scroll {
+	width: 500px;
+	border: 1px #a9c6c9 solid;
+}
+
+table.scroll thead {
+	display: table;
+	width: 100%;
+	background-color: salmon;
+}
+
+table.scroll tbody {
+	display: block;
+	height: 100px;
+	overflow: auto;
+	float: left;
+	width: 100%;
+}
+
+table.scroll tbody tr {
+	display: table;
+	width: 100%;
+}
+
+table.scroll th,
+td {
+	width: 33%;
+	padding: 8px;
+}
+
+/* end make it scrolled */
+
+.fixed-th th,.fixed-th td{
+	vertical-align: top;
+	padding:10px 7px;
+	text-align: center;
+}
+.fixed-th th + th, .fixed-th td + td {
+	border-left:1px solid rgb(8, 8, 8);
+}
+.fixed-th th:nth-child(1), 
+.fixed-th td:nth-child(1) {
+	min-width:40px;
+}
+.fixed-th th:nth-child(2), 
+.fixed-th td:nth-child(2) {
+	width:100px;
+}
+.fixed-th th:nth-child(3), 
+.fixed-th td:nth-child(3) {
+	width:100px;
+}
+.fixed-th th:nth-child(4), 
+.fixed-th td:nth-child(4) {
+	width: 100px;
+}
+.fixed-th th:nth-child(5), 
+.fixed-th td:nth-child(5) {
+	width: 100px;
+}
+.fixed-th th:nth-child(6), 
+.fixed-th td:nth-child(6) {
+	width: 100px;
+}
+.fixed-th th:nth-child(7),
+.fixed-th td:nth-child(7) {
+	width: 100px;
+}
+
+.fixed-th th:nth-child(8),
+.fixed-th td:nth-child(8) {
+	width: 200px;
+}
+
+/* End CSS for Fixed Table Header in index4.html */

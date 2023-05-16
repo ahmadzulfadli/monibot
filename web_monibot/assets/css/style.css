@@ -1,0 +1,37 @@
+body {
+    padding: 0px;
+    margin: 0px;
+    background-color: #d8dee9;;
+}
+
+.navbar{
+    background-color: #4c566a;
+}
+
+.navbar-brand {
+    color: #d8dee9;
+}
+.navbar-text {
+    color: #d8dee9;
+}
+
+.sidebar{
+    background-color: #ffff;
+    
+}
+.content{
+    color: black;
+}
+
+.data .card{
+    background-color: #ffff;
+}
+.card-title{
+    color: black;
+}
+
+#tabel{
+    margin-top: 20px;
+}
+
+
