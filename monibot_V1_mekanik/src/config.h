@@ -124,5 +124,6 @@ const char *password = "hy12345678";
 #define MOTOR_1_PIN_2 15
 #define MOTOR_2_PIN_1 13
 #define MOTOR_2_PIN_2 12
+#define LED_PIN 4
 
 #endif // MINIBOT_CONFIG_H_

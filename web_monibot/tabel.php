@@ -27,10 +27,10 @@ class Content
 						<tr>
 							<th>No</th>
 							<th>Waktu</th>
-							<th>Sensor 1</th>
-							<th>Sensor 2</th>
-							<th>Sensor 3</th>
-							<th>Sensor 4</th>
+							<th>Temperature</th>
+							<th>Humidity</th>
+							<th>PPMCH4</th>
+							<th>PPMCO</th>
 						</tr>
 					</thead>
 					<tbody>';

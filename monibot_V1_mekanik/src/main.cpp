@@ -33,7 +33,7 @@ static const char PROGMEM INDEX_HTML[] = R"rawliteral(
 
         .button {
             width: 100px;
-            height: 40px;
+            height: 60px;
             background-color: #079bfd;
             border: none;
             border-radius: 4px;
@@ -55,7 +55,16 @@ static const char PROGMEM INDEX_HTML[] = R"rawliteral(
         }
 
         .stop {
-            background-color: #fd0707;
+            background-color: black;
+            width: 114px;
+        }
+
+        .on {
+            background-color: green;
+        }
+
+        .off {
+            background-color: red;
         }
 
         table {
@@ -75,6 +84,20 @@ static const char PROGMEM INDEX_HTML[] = R"rawliteral(
             height: 400px;
             transform: rotate(180deg);
         }
+
+        @keyframes buttonAnimation {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.1);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
     </style>
 </head>
 
@@ -83,24 +106,29 @@ static const char PROGMEM INDEX_HTML[] = R"rawliteral(
     <img src="" id="photo">
     <table>
         <tr>
-            <td colspan="3" align="center"><button class="button" onmousedown="toggleCheckbox('forward');"
-                    ontouchstart="toggleCheckbox('forward');" onmouseup="toggleCheckbox('stop');"
-                    ontouchend="toggleCheckbox('stop');">Maju</button></td>
+            <td colspan="3" align="center">
+                <button class="button" onmousedown="toggleCheckbox('forward'); animateButton(this);" ontouchstart="toggleCheckbox('forward'); animateButton(this);" onmouseup="toggleCheckbox('stop');" ontouchend="toggleCheckbox('stop');">Maju</button>
+            </td>
         </tr>
         <tr>
-            <td align="center"><button class="button" onmousedown="toggleCheckbox('left');"
-                    ontouchstart="toggleCheckbox('left');" onmouseup="toggleCheckbox('stop');"
-                    ontouchend="toggleCheckbox('stop');">Kiri</button></td>
-            <td align="center"><button class="button stop" onmousedown="toggleCheckbox('stop');"
-                    ontouchstart="toggleCheckbox('stop');">Berhenti</button></td>
-            <td align="center"><button class="button" onmousedown="toggleCheckbox('right');"
-                    ontouchstart="toggleCheckbox('right');" onmouseup="toggleCheckbox('stop');"
-                    ontouchend="toggleCheckbox('stop');">Kanan</button></td>
+            <td align="center">
+                <button class="button" onmousedown="toggleCheckbox('left'); animateButton(this);" ontouchstart="toggleCheckbox('left'); animateButton(this);" onmouseup="toggleCheckbox('stop');" ontouchend="toggleCheckbox('stop');">Kiri</button>
+            </td>
+            <td align="center">
+                <button class="button stop" onmousedown="toggleCheckbox('stop'); animateButton(this);" ontouchstart="toggleCheckbox('stop');">MONIBOT</button>
+            </td>
+            <td align="center">
+                <button class="button" onmousedown="toggleCheckbox('right'); animateButton(this);" ontouchstart="toggleCheckbox('right'); animateButton(this);" onmouseup="toggleCheckbox('stop');" ontouchend="toggleCheckbox('stop');">Kanan</button>
+        </tr />
+        <td colspan="3" align="center">
+            <button class="button" onmousedown="toggleCheckbox('backward'); animateButton(this);" ontouchstart="toggleCheckbox('backward'); animateButton(this);" onmouseup="toggleCheckbox('stop');" ontouchend="toggleCheckbox('stop');">Mundur</button>
+        </td>
         </tr>
         <tr>
-            <td colspan="3" align="center"><button class="button" onmousedown="toggleCheckbox('backward');"
-                    ontouchstart="toggleCheckbox('backward');" onmouseup="toggleCheckbox('stop');"
-                    ontouchend="toggleCheckbox('stop');">Mundur</button></td>
+            <td colspan="3" align="center">
+                <button class="button on" onmousedown="toggleCheckbox('lampu_hidup'); animateButton(this);" ontouchstart="toggleCheckbox('lampu_hidup'); animateButton(this);">LED<br>Hidup</button>
+                <button class="button off" onmousedown="toggleCheckbox('lampu_mati'); animateButton(this);" ontouchstart="toggleCheckbox('lampu_mati'); animateButton(this);">LED<br>Mati</button>
+            </td>
         </tr>
     </table>
     <script>
@@ -109,6 +137,14 @@ static const char PROGMEM INDEX_HTML[] = R"rawliteral(
             xhr.open("GET", "/action?go=" + x, true);
             xhr.send();
         }
+
+        function animateButton(button) {
+            button.style.animation = 'buttonAnimation 0.3s';
+            setTimeout(function() {
+                button.style.animation = '';
+            }, 300);
+        }
+
         window.onload = document.getElementById("photo").src = window.location.href.slice(0, -1) + ":81/stream";
     </script>
 </body>
@@ -285,6 +321,16 @@ static esp_err_t cmd_handler(httpd_req_t *req)
     digitalWrite(MOTOR_2_PIN_1, 0);
     digitalWrite(MOTOR_2_PIN_2, 0);
   }
+  else if (!strcmp(variable, "lampu_hidup"))
+  {
+    Serial.println("lampu_hidup");
+    digitalWrite(LED_PIN, 1);
+  }
+  else if (!strcmp(variable, "lampu_mati"))
+  {
+    Serial.println("lampu_mati");
+    digitalWrite(LED_PIN, 0);
+  }
   else
   {
     res = -1;
@@ -340,6 +386,9 @@ void setup()
   pinMode(MOTOR_1_PIN_2, OUTPUT);
   pinMode(MOTOR_2_PIN_1, OUTPUT);
   pinMode(MOTOR_2_PIN_2, OUTPUT);
+
+  // LED
+  pinMode(LED_PIN, OUTPUT);
 
   Serial.begin(115200);
   Serial.setDebugOutput(false);
@@ -401,6 +450,7 @@ void setup()
 
   // Start streaming web server
   startCameraServer();
+  // digitalWrite(LED_PIN, HIGH);
 }
 
 void loop()

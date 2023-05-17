@@ -85,14 +85,14 @@ if ($data) {
                         </div>
                         <div class="col-6 col-xl-3 data">
                             <div class="card">
-                                <h2 class="card-title">PPMCH2</h2>
+                                <h2 class="card-title">PPMCH4</h2>
                                 <div id="jg3" class="gauge size-2"></div>
                                 <div class="h-split"></div>
                             </div>
                         </div>
                         <div class="col-6 col-xl-3 data">
                             <div class="card">
-                                <h2 class="card-title">PPMCO2</h2>
+                                <h2 class="card-title">PPMCO</h2>
                                 <div id="jg4" class="gauge size-2"></div>
                                 <div class="h-split"></div>
                             </div>
