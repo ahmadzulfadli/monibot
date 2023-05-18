@@ -35,6 +35,21 @@ void setup()
   Serial.println("WiFi connected.");
   Serial.println("IP address: ");
   Serial.println(WiFi.localIP());
+
+  // OLED
+  if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C))
+  {
+    Serial.println(F("SSD1306 alokasi gagal"));
+    for (;;)
+      ;
+  }
+
+  display.clearDisplay();
+  display.setTextColor(WHITE);
+  display.setTextSize(1);
+  display.setCursor(0, 0);
+  display.println("Sensor Data");
+  display.display();
 }
 
 void loop()
@@ -85,6 +100,16 @@ void loop()
     Serial.print("' with RSSI ");
     Serial.println(LoRa.packetRssi());
 
+    // Tampilkan dan data sensor ke OLED
+
+    display.clearDisplay();
+    display.setCursor(0, 0);
+    display.println("Suhu: " + temp + "C");
+    display.println("Kelembaban: " + humd + "%");
+    display.println("MQ4: " + ppmch4);
+    display.println("MQ7: " + ppmco);
+    display.display();
+
     //===============================================================
 
     // pengiriman nilai sensor ke web server
@@ -92,8 +117,8 @@ void loop()
     apiUrl += "mode=save";
     apiUrl += "&temp=" + temp;
     apiUrl += "&humd=" + humd;
-    apiUrl += "&ppmch2=" + ppmch4;
-    apiUrl += "&ppmco2=" + ppmco;
+    apiUrl += "&ppmch4=" + ppmch4;
+    apiUrl += "&ppmco=" + ppmco;
 
     // Set header Request
     client.print(String("GET ") + apiUrl + " HTTP/1.1\r\n" +
