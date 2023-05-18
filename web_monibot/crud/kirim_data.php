@@ -19,18 +19,18 @@ if ($app->is_url_query('mode')) {
             $app->read_json();
 
         case 'save':
-            if ($app->is_url_query('temp') && $app->is_url_query('humd') && $app->is_url_query('ppmch2') && $app->is_url_query('ppmco2')) {
+            if ($app->is_url_query('temp') && $app->is_url_query('humd') && $app->is_url_query('ppmch4') && $app->is_url_query('ppmco')) {
                 $temp = $app->get_url_query_value('temp');
                 $humd = $app->get_url_query_value('humd');
-                $ppmch2 = $app->get_url_query_value('ppmch2');
-                $ppmco2 = $app->get_url_query_value('ppmco2');
-                $app->create_data($temp, $humd, $ppmch2, $ppmco2);
+                $ppmch4 = $app->get_url_query_value('ppmch4');
+                $ppmco = $app->get_url_query_value('ppmco');
+                $app->create_data($temp, $humd, $ppmch4, $ppmco);
             } else {
                 $error = [
                     'temp' => 'required',
                     'humd' => 'required',
-                    'ppmch2' => 'required',
-                    'ppmco2' => 'required',
+                    'ppmch4' => 'required',
+                    'ppmco' => 'required',
                 ];
                 echo $app->error_handler($error);
             }

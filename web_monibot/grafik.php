@@ -99,10 +99,10 @@ $data = $app->garfik_data();
 				name: 'humd',
 				data: []
 			}, {
-				name: 'ppmch2',
+				name: 'ppmch4',
 				data: []
 			}, {
-				name: 'ppmco2',
+				name: 'ppmco',
 				data: []
 			}],
 			xaxis: {
@@ -156,8 +156,8 @@ $data = $app->garfik_data();
 			categories.push("<?php echo $row['timestamp']; ?>");
 			Sensor_1.push(parseFloat("<?php echo $row['data_temp']; ?>"));
 			Sensor_2.push(parseFloat("<?php echo $row['data_humd']; ?>"));
-			Sensor_3.push(parseFloat("<?php echo $row['data_ppmch2']; ?>"));
-			Sensor_4.push(parseFloat("<?php echo $row['data_ppmco2']; ?>"));
+			Sensor_3.push(parseFloat("<?php echo $row['data_ppmch4']; ?>"));
+			Sensor_4.push(parseFloat("<?php echo $row['data_ppmco']; ?>"));
 		<?php endforeach; ?>
 
 		options.series[0].data = Sensor_1;

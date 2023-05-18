@@ -2,26 +2,25 @@
 #define MONIBOT_TRANSMITTER_CONFIG_H_
 
 #include <Arduino.h>
-#include <Adafruit_Sensor.h>
+#include <WiFi.h>
 #include <SPI.h>
-#include <Wire.h>
+#include <LoRa.h>
 
-#include <DHT.h>
-#include "MQ-Sensor-SOLDERED.h"
+// Network ID
+const char *ssid = "MyASUS";
+const char *password = "hy12345678";
+const char *host = "192.168.80.240";
+const int port = 80;
 
-// DHT 22
-#define DHTPIN 13
-#define DHTTYPE DHT22
-DHT dht(DHTPIN, DHTTYPE);
+// lora
+#define SS 5
+#define RST 14
+#define DIO0 2
+int counter = 0;
 
-// MQ4
-#define SENSOR_MQ4_PIN 45
-#define RatioMQ4CleanAir (4.4) // RS / R0 = 60 ppm
-MQ2 mq4(SENSOR_MQ4_PIN);
-
-// MQ7
-#define SENSOR_MQ7_PIN 34
-#define RatioMQ7CleanAir 27.5 // RS / R0 = 27.5 ppm
-MQ2 mq7(SENSOR_MQ7_PIN);
+const long BAND = 433E6;     // frekuensi operasi LoRa
+const int TX_POWER = 17;     // daya output LoRa
+const long BAUD_RATE = 9600; // kecepatan data LoRa
+const int BW = 125E3;        // bandwidth LoRa
 
 #endif // MONIBOT_TRANSMITTER_CONFIG_H_

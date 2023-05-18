@@ -2,89 +2,122 @@
 
 void setup()
 {
+  // NodeMCU Utility
   Serial.begin(115200);
 
-  // MQ4
-  mq4.setRegressionMethod(1); //_PPM =  a*ratio^b
-  mq4.setA(1012.7);
-  mq4.setB(-2.786); // Configurate the ecuation values to get CH4 concentration
-  mq4.begin();
-  Serial.print("Calibrating please wait.");
-  float calcR0 = 0;
-  for (int i = 1; i <= 10; i++)
+  // Lora
+  while (!Serial)
+    ;
+  Serial.println("LoRa Receiver");
+  LoRa.setPins(SS, RST, DIO0);
+  while (!LoRa.begin(BAND))
   {
-    mq4.update(); // Update data, the arduino will be read the voltage on the analog pin
-    calcR0 += mq4.calibrate(RatioMQ4CleanAir);
+    Serial.println(".");
+    delay(500);
+  }
+  LoRa.setTxPower(TX_POWER);
+  LoRa.setSpreadingFactor(12);
+  LoRa.setSignalBandwidth(BW);
+  LoRa.setCodingRate4(5);
+  LoRa.enableCrc();
+  Serial.println("LoRa Receiver Ready!");
+
+  // Networking
+  Serial.print("Connecting to ");
+  Serial.println(ssid);
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED)
+  {
+    delay(500);
     Serial.print(".");
   }
-  mq4.setR0(calcR0 / 10);
-  Serial.println("  done!.");
-
-  if (isinf(calcR0))
-  {
-    Serial.println("Warning: Conection issue founded, R0 is infite (Open circuit detected) please check your "
-                   "wiring and supply");
-    while (1)
-      ;
-  }
-  if (calcR0 == 0)
-  {
-    Serial.println("Warning: Conection issue founded, R0 is zero (Analog pin with short circuit to ground) please "
-                   "check your wiring and supply");
-    while (1)
-      ;
-  }
-  /*****************************  MQ CAlibration ********************************************/
-  mq4.serialDebug(true);
-
-  // MQ7
-  mq7.setRegressionMethod(1); //_PPM =  a*ratio^b
-  mq7.setA(99.042);
-  mq7.setB(-1.518); // Configurate the ecuation values to get CO concentration
-  mq7.begin();
-  Serial.print("Calibrating please wait.");
-  float calcR0 = 0;
-  for (int i = 1; i <= 10; i++)
-  {
-    mq7.update(); // Update data, the arduino will be read the voltage on the analog pin
-    calcR0 += mq7.calibrate(RatioMQ7CleanAir);
-    Serial.print(".");
-  }
-  mq7.setR0(calcR0 / 10);
-  Serial.println("  done!.");
-
-  if (isinf(calcR0))
-  {
-    Serial.println("Warning: Conection issue founded, R0 is infite (Open circuit detected) please check your "
-                   "wiring and supply");
-    while (1)
-      ;
-  }
-  if (calcR0 == 0)
-  {
-    Serial.println("Warning: Conection issue founded, R0 is zero (Analog pin with short circuit to ground) please "
-                   "check your wiring and supply");
-    while (1)
-      ;
-  }
-  /*****************************  MQ CAlibration ********************************************/
-  mq7.serialDebug(true);
+  Serial.println("");
+  Serial.println("WiFi connected.");
+  Serial.println("IP address: ");
+  Serial.println(WiFi.localIP());
 }
 
 void loop()
 {
+  // koneksi ke web client
+  WiFiClient client;
 
-  // MQ4
-  mq4.update();      // Update data, the arduino will be read the voltage on the analog pin
-  mq4.readSensor();  // Sensor will read PPM concentration using the model and a and b values setted before or in the
-                     // setup
-  mq4.serialDebug(); // Will print the table on the serial port
-  delay(500);        // Sampling frequency
+  if (!client.connect(host, port))
+  {
+    Serial.println("Connection failed");
+    return;
+  }
 
-  // MQ7
-  mq7.update();      // Update data, the arduino will be read the voltage on the analog pin
-  mq7.readSensor();  // Sensor will read PPM concentration using the model and a and b values setted before or in the
-                     // setup
-  mq7.serialDebug(); // Will print the table on the serial port
-  delay(500);
+  // penerimaan lora
+  String receivedData = "";
+
+  int packetSize = LoRa.parsePacket();
+  if (packetSize != 0)
+  {
+    Serial.print("Received packet '");
+
+    while (LoRa.available())
+    {
+      receivedData += (char)LoRa.read();
+    }
+
+    Serial.println(receivedData);
+
+    char stringData[receivedData.length() + 1];
+    strcpy(stringData, receivedData.c_str());
+
+    char *ptr = strtok(stringData, ",");
+    int i = 0;
+    String data[6];
+
+    while (ptr != NULL)
+    {
+      data[i] = String(ptr);
+      i++;
+      ptr = strtok(NULL, ",");
+    }
+
+    String temp = data[0];
+    String humd = data[1];
+    String ppmch4 = data[2];
+    String ppmco = data[3];
+
+    Serial.print("' with RSSI ");
+    Serial.println(LoRa.packetRssi());
+
+    //===============================================================
+
+    // pengiriman nilai sensor ke web server
+    String apiUrl = "http://intai.com/crud/kirim_data.php?";
+    apiUrl += "mode=save";
+    apiUrl += "&temp=" + temp;
+    apiUrl += "&humd=" + humd;
+    apiUrl += "&ppmch2=" + ppmch4;
+    apiUrl += "&ppmco2=" + ppmco;
+
+    // Set header Request
+    client.print(String("GET ") + apiUrl + " HTTP/1.1\r\n" +
+                 "Host: " + host + "\r\n" +
+                 "Connection: close\r\n\r\n");
+
+    // Pastikan tidak berlarut-larut
+    unsigned long timeout = millis();
+    while (client.available() == 0)
+    {
+      if (millis() - timeout > 3000)
+      {
+        Serial.println(">>> Client Timeout !");
+        Serial.println(">>> Operation failed !");
+        client.stop();
+        return;
+      }
+    }
+
+    // Baca hasil balasan dari PHP
+    while (client.available())
+    {
+      String line = client.readStringUntil('\r');
+      Serial.println(line);
+    }
+  }
 }

@@ -17,9 +17,9 @@ class Monibot
      * This section for CRUD Operation
      * Create - Read - Update - Delete
      */
-    function create_data($temp, $humd, $ppmch2, $ppmco2)
+    function create_data($temp, $humd, $ppmch4, $ppmco)
     {
-        $sql_query = "INSERT INTO data_monibot (data_temp, data_humd, data_ppmch2, data_ppmco2) VALUES ('" . $temp . "','" . $humd . "','" . $ppmch2 . "','" . $ppmco2 . "')";
+        $sql_query = "INSERT INTO data_monibot (data_temp, data_humd, data_ppmch4, data_ppmco) VALUES ('" . $temp . "','" . $humd . "','" . $ppmch4 . "','" . $ppmco . "')";
         return $this->execute_query($sql_query);
     }
 
@@ -52,7 +52,7 @@ class Monibot
         if (empty($search)) {
             $sql_query .= " ORDER BY timestamp DESC LIMIT 10";
         } else {
-            $sql_query .= " WHERE temp LIKE '%$search%' OR humd LIKE '%$search%' OR ppmch2 LIKE '%$search%'OR ppmco2 LIKE '%$search%'";
+            $sql_query .= " WHERE temp LIKE '%$search%' OR humd LIKE '%$search%' OR ppmch4 LIKE '%$search%'OR ppmco LIKE '%$search%'";
         }
 
         $result = $this->connection->query($sql_query);
@@ -74,7 +74,7 @@ class Monibot
         if (empty($search)) {
             $sql_query .= " ORDER BY timestamp DESC";
         } else {
-            $sql_query .= " WHERE temp LIKE '%$search%' OR humd LIKE '%$search%' OR ppmch2 LIKE '%$search%'OR ppmco2 LIKE '%$search%'";
+            $sql_query .= " WHERE temp LIKE '%$search%' OR humd LIKE '%$search%' OR ppmch4 LIKE '%$search%'OR ppmco LIKE '%$search%'";
         }
 
         $result = $this->connection->query($sql_query);

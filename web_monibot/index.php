@@ -190,7 +190,7 @@ if ($data) {
 
             var defs3 = {
                 label: "ppm",
-                value: <?php echo $last_data['data_ppmch2']; ?>,
+                value: <?php echo $last_data['data_ppmch4']; ?>,
                 min: 0,
                 max: 150,
                 decimals: 2,
@@ -207,7 +207,7 @@ if ($data) {
 
             var defs4 = {
                 label: "ppm",
-                value: <?php echo $last_data['data_ppmco2']; ?>,
+                value: <?php echo $last_data['data_ppmco']; ?>,
                 min: 0,
                 max: 150,
                 decimals: 2,

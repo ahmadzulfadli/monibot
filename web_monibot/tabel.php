@@ -43,8 +43,8 @@ class Content
 					<td>' . $row['timestamp'] . '</td>
 					<td>' . $row['data_temp'] . '</td>
 					<td>' . $row['data_humd'] . '</td>
-					<td>' . $row['data_ppmch2'] . '</td>
-					<td>' . $row['data_ppmco2'] . '</td>
+					<td>' . $row['data_ppmch4'] . '</td>
+					<td>' . $row['data_ppmco'] . '</td>
 				</tr>';
 
 				$i++;
