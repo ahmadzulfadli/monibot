@@ -34,4 +34,7 @@ const int BW = 125E3;        // bandwidth LoRa
 #define OLED_RESET -1 // Reset pin # (or -1 if sharing Arduino reset pin)
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
+// BUZZER
+#define BUZZER 13
+
 #endif // MONIBOT_TRANSMITTER_CONFIG_H_

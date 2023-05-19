@@ -5,7 +5,10 @@ void setup()
   // NodeMCU Utility
   Serial.begin(115200);
 
-  // Lora
+  // BUZZER
+  pinMode(BUZZER, OUTPUT);
+
+  // LORA
   while (!Serial)
     ;
   Serial.println("LoRa Receiver");
@@ -22,7 +25,7 @@ void setup()
   LoRa.enableCrc();
   Serial.println("LoRa Receiver Ready!");
 
-  // Networking
+  // NETWORKING
   Serial.print("Connecting to ");
   Serial.println(ssid);
   WiFi.begin(ssid, password);
@@ -100,8 +103,17 @@ void loop()
     Serial.print("' with RSSI ");
     Serial.println(LoRa.packetRssi());
 
-    // Tampilkan dan data sensor ke OLED
+    // BUZZER
+    if (ppmco.toInt() > 100)
+    {
+      tone(BUZZER, 1000);
+    }
+    else
+    {
+      noTone(BUZZER);
+    }
 
+    // Tampilkan dan data sensor ke OLED
     display.clearDisplay();
     display.setCursor(0, 0);
     display.println("Suhu: " + temp + "C");
