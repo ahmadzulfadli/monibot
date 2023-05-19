@@ -33,7 +33,7 @@ void setup()
 
   Serial.println("Memulai pengambilan data sensor...");
 
-  // MQ4
+  /* // MQ4
   mq4.setRegressionMethod(1); //_PPM =  a*ratio^b
   mq4.setA(574.25);
   mq4.setB(-2.222);
@@ -63,7 +63,7 @@ void setup()
     while (1)
       ;
   }
-  mq4.serialDebug(true);
+  mq4.serialDebug(true); */
 
   // MQ7
   mq7.setRegressionMethod(1); //_PPM =  a*ratio^b
@@ -96,7 +96,7 @@ void setup()
     while (1)
       ;
   }
-  mq7.serialDebug(true);
+  // mq7.serialDebug(true);
 
   // DHT
   dht.begin();
@@ -125,11 +125,11 @@ void loop()
 
     // MQ4
     float mq4_ppm = random(0, 100);
-    mq4.update();
+    /* mq4.update();
     float mq4_ppm = mq4.readSensor();
     Serial.print("MQ4: ");
     Serial.print(mq4_ppm);
-    Serial.println(" ppm");
+    Serial.println(" ppm"); */
 
     // MQ7
     mq7.update();

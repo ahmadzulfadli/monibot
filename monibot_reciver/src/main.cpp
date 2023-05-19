@@ -53,6 +53,11 @@ void setup()
   display.setCursor(0, 0);
   display.println("Sensor Data");
   display.display();
+
+  // bunyikan buzzer
+  tone(BUZZER, 1000);
+  delay(1000);
+  noTone(BUZZER);
 }
 
 void loop()
@@ -63,6 +68,15 @@ void loop()
   if (!client.connect(host, port))
   {
     Serial.println("Connection failed");
+
+    // Tamplikan pesan error ke OLED
+    display.clearDisplay();
+    display.setTextSize(1);
+    display.setTextColor(WHITE);
+    display.setCursor(0, 0);
+    display.println("Connection failed");
+    display.display();
+
     return;
   }
 
@@ -86,7 +100,7 @@ void loop()
 
     char *ptr = strtok(stringData, ",");
     int i = 0;
-    String data[6];
+    String data[4];
 
     while (ptr != NULL)
     {
@@ -99,6 +113,15 @@ void loop()
     String humd = data[1];
     String ppmch4 = data[2];
     String ppmco = data[3];
+
+    Serial.print("Received '");
+    Serial.print(temp);
+    Serial.print(" ");
+    Serial.print(humd);
+    Serial.print(" ");
+    Serial.print(ppmch4);
+    Serial.print(" ");
+    Serial.print(ppmco);
 
     Serial.print("' with RSSI ");
     Serial.println(LoRa.packetRssi());
@@ -115,17 +138,25 @@ void loop()
 
     // Tampilkan dan data sensor ke OLED
     display.clearDisplay();
-    display.setCursor(0, 0);
-    display.println("Suhu: " + temp + "C");
-    display.println("Kelembaban: " + humd + "%");
-    display.println("MQ4: " + ppmch4);
-    display.println("MQ7: " + ppmco);
+    display.setTextSize(1);
+    display.setTextColor(WHITE);
+
+    String judul = "MONIBOT USR";
+    display.setCursor((SCREEN_WIDTH - (judul.length() * 6)) / 2, 0);
+    display.println(judul);
+
+    display.setTextSize(1);
+    display.println("\nSuhu: " + String(temp) + "C");
+    display.println("Kelembaban: " + String(humd) + "%");
+    display.println("MQ4: " + String(ppmch4));
+    display.println("MQ7: " + String(ppmco));
+
     display.display();
 
     //===============================================================
 
     // pengiriman nilai sensor ke web server
-    String apiUrl = "http://intai.com/crud/kirim_data.php?";
+    String apiUrl = "http://monibot.com/crud/kirim_data.php?";
     apiUrl += "mode=save";
     apiUrl += "&temp=" + temp;
     apiUrl += "&humd=" + humd;

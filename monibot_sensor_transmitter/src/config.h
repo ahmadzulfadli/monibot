@@ -21,7 +21,7 @@
 #define RST 14
 #define DIO0 2
 
-// MQ2
+// MQ4
 #define RatioMQ4CleanAir 9.83 // RS / R0 = 9.83 ppm
 #define MQ4_PIN 35
 MQ2 mq4(MQ4_PIN);

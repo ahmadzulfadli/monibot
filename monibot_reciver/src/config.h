@@ -13,7 +13,7 @@
 // NETWORKING
 const char *ssid = "MyASUS";
 const char *password = "hy12345678";
-const char *host = "192.168.80.240";
+const char *host = "192.168.106.240";
 const int port = 80;
 
 // LORA
