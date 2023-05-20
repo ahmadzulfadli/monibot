@@ -11,9 +11,9 @@
 #include <Adafruit_SSD1306.h>
 
 // NETWORKING
-const char *ssid = "MyASUS";
-const char *password = "hy12345678";
-const char *host = "192.168.106.240";
+const char *ssid = "Raden Mas Wifi";
+const char *password = "bebaspakai";
+const char *host = "172.16.141.160";
 const int port = 80;
 
 // LORA

@@ -25,6 +25,16 @@ void setup()
   LoRa.enableCrc();
   Serial.println("LoRa Receiver Ready!");
 
+  // OLED
+
+  if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C))
+  {
+    Serial.println(F("SSD1306 alokasi gagal"));
+    for (;;)
+      ;
+  }
+  display.clearDisplay();
+
   // NETWORKING
   Serial.print("Connecting to ");
   Serial.println(ssid);
@@ -33,20 +43,18 @@ void setup()
   {
     delay(500);
     Serial.print(".");
+    display.setTextColor(WHITE);
+    display.setTextSize(1);
+    display.setCursor(0, 0);
+    display.println("Sensor Data");
+    display.display();
   }
   Serial.println("");
   Serial.println("WiFi connected.");
   Serial.println("IP address: ");
   Serial.println(WiFi.localIP());
 
-  // OLED
-  if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C))
-  {
-    Serial.println(F("SSD1306 alokasi gagal"));
-    for (;;)
-      ;
-  }
-
+  // Tampilkan pesan ke OLED
   display.clearDisplay();
   display.setTextColor(WHITE);
   display.setTextSize(1);
@@ -156,7 +164,10 @@ void loop()
     //===============================================================
 
     // pengiriman nilai sensor ke web server
-    String apiUrl = "http://monibot.com/crud/kirim_data.php?";
+    // windows
+    String apiUrl = "http://localhost/web_monibot/crud/kirim_data.php?";
+    // linux
+    // String apiUrl = "http://monibot.com/crud/kirim_data.php?";
     apiUrl += "mode=save";
     apiUrl += "&temp=" + temp;
     apiUrl += "&humd=" + humd;
