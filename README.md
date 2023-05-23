@@ -1,4 +1,4 @@
-[# Robot MONIBOT
+# Robot MONIBOT
 
 Robot ini dirancang untuk memonitoring lokasi tambang dengan menggunakan sensor MQ-4, MQ-7, dan DHT22. Robot akan mengumpulkan data gas metana (CH4) dan karbon monoksida (CO) menggunakan sensor MQ-4 dan MQ-7, serta suhu dan kelembaban menggunakan sensor DHT22.
 
