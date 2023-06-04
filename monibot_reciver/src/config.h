@@ -10,9 +10,11 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 
+#include <Fuzzy.h>
+
 // NETWORKING
-const char *ssid = "Raden Mas Wifi";
-const char *password = "bebaspakai";
+const char *ssid = "MyASUS";
+const char *password = "hy12345678";
 const char *host = "172.16.141.160";
 const int port = 80;
 
@@ -36,5 +38,8 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
 // BUZZER
 #define BUZZER 13
+
+// FUZZY
+Fuzzy *fuzzy = new Fuzzy();
 
 #endif // MONIBOT_TRANSMITTER_CONFIG_H_

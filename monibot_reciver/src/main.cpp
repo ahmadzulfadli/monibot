@@ -1,5 +1,119 @@
 #include <config.h>
 
+// tampilkan data ke serial monitor
+void tampilkan_Data(String temp, String humd, String ppmch4, String ppmco)
+{
+  Serial.print("Suhu: ");
+  Serial.print(temp);
+  Serial.print("C");
+  Serial.print(" | Kelembaban: ");
+  Serial.print(humd);
+  Serial.print("%");
+  Serial.print(" | MQ4: ");
+  Serial.print(ppmch4);
+  Serial.print(" | MQ7: ");
+  Serial.print(ppmco);
+  Serial.println();
+
+  // Tampilkan dan data sensor ke OLED
+  display.clearDisplay();
+  display.setTextSize(1);
+  display.setTextColor(WHITE);
+
+  String judul = "MONIBOT USR";
+  display.setCursor((SCREEN_WIDTH - (judul.length() * 6)) / 2, 0);
+  display.println(judul);
+
+  display.setTextSize(1);
+  display.println("\nSuhu: " + String(temp) + "C");
+  display.println("Kelembaban: " + String(humd) + "%");
+  display.println("MQ4: " + String(ppmch4));
+  display.println("MQ7: " + String(ppmco));
+
+  display.display();
+}
+
+// kiriman data ke web server
+void kirim_Data(String temp, String humd, String ppmch4, String ppmco)
+{
+  // koneksi ke web client
+  WiFiClient client;
+
+  if (!client.connect(host, port))
+  {
+    Serial.println("Connection failed");
+
+    // Tamplikan pesan error ke OLED
+    display.clearDisplay();
+    display.setTextSize(1);
+    display.setTextColor(WHITE);
+    display.setCursor(0, 0);
+    display.println("Connection failed");
+    display.display();
+
+    return;
+  }
+
+  // pengiriman nilai sensor ke web server
+  // windows
+  String apiUrl = "http://localhost/web_monibot/crud/kirim_data.php?";
+  // linux
+  // String apiUrl = "http://monibot.com/crud/kirim_data.php?";
+  apiUrl += "mode=save";
+  apiUrl += "&temp=" + temp;
+  apiUrl += "&humd=" + humd;
+  apiUrl += "&ppmch4=" + ppmch4;
+  apiUrl += "&ppmco=" + ppmco;
+
+  // Set header Request
+  client.print(String("GET ") + apiUrl + " HTTP/1.1\r\n" +
+               "Host: " + host + "\r\n" +
+               "Connection: close\r\n\r\n");
+
+  // Pastikan tidak berlarut-larut
+  unsigned long timeout = millis();
+  while (client.available() == 0)
+  {
+    if (millis() - timeout > 3000)
+    {
+      Serial.println(">>> Client Timeout !");
+      Serial.println(">>> Operation failed !");
+      client.stop();
+      return;
+    }
+  }
+
+  // Baca hasil balasan dari PHP
+  while (client.available())
+  {
+    String line = client.readStringUntil('\r');
+    Serial.println(line);
+  }
+}
+
+void olah_data(String ppmch4, String ppmco)
+{
+
+  // fuzzy logic
+  fuzzy->setInput(0, ppmch4.toFloat());
+  fuzzy->setInput(1, ppmco.toFloat());
+  fuzzy->fuzzify();
+
+  float fuzzyOutput = fuzzy->defuzzify(0);
+  Serial.println("Fuzzy Output: " + String(fuzzyOutput));
+
+  // mengatur frekuensi bunyi buzzer dengan fungsi map
+  int buzzerFreq = map(fuzzyOutput, 0, 100, 0, 1000);
+  if (fuzzyOutput > 0)
+  {
+    tone(BUZZER, buzzerFreq);
+  }
+  else
+  {
+    noTone(BUZZER);
+  }
+}
+
 void setup()
 {
   // NodeMCU Utility
@@ -46,7 +160,7 @@ void setup()
     display.setTextColor(WHITE);
     display.setTextSize(1);
     display.setCursor(0, 0);
-    display.println("Sensor Data");
+    display.println("Menguhubungkan ...");
     display.display();
   }
   Serial.println("");
@@ -70,23 +184,6 @@ void setup()
 
 void loop()
 {
-  // koneksi ke web client
-  WiFiClient client;
-
-  if (!client.connect(host, port))
-  {
-    Serial.println("Connection failed");
-
-    // Tamplikan pesan error ke OLED
-    display.clearDisplay();
-    display.setTextSize(1);
-    display.setTextColor(WHITE);
-    display.setCursor(0, 0);
-    display.println("Connection failed");
-    display.display();
-
-    return;
-  }
 
   // penerimaan lora
   String receivedData = "";
@@ -122,15 +219,6 @@ void loop()
     String ppmch4 = data[2];
     String ppmco = data[3];
 
-    Serial.print("Received '");
-    Serial.print(temp);
-    Serial.print(" ");
-    Serial.print(humd);
-    Serial.print(" ");
-    Serial.print(ppmch4);
-    Serial.print(" ");
-    Serial.print(ppmco);
-
     Serial.print("' with RSSI ");
     Serial.println(LoRa.packetRssi());
 
@@ -144,59 +232,13 @@ void loop()
       noTone(BUZZER);
     }
 
-    // Tampilkan dan data sensor ke OLED
-    display.clearDisplay();
-    display.setTextSize(1);
-    display.setTextColor(WHITE);
+    // olah_data
+    olah_data(ppmch4, ppmco);
 
-    String judul = "MONIBOT USR";
-    display.setCursor((SCREEN_WIDTH - (judul.length() * 6)) / 2, 0);
-    display.println(judul);
-
-    display.setTextSize(1);
-    display.println("\nSuhu: " + String(temp) + "C");
-    display.println("Kelembaban: " + String(humd) + "%");
-    display.println("MQ4: " + String(ppmch4));
-    display.println("MQ7: " + String(ppmco));
-
-    display.display();
-
-    //===============================================================
+    // tampilkan data ke lcd
+    tampilkan_Data(temp, humd, ppmch4, ppmco);
 
     // pengiriman nilai sensor ke web server
-    // windows
-    String apiUrl = "http://localhost/web_monibot/crud/kirim_data.php?";
-    // linux
-    // String apiUrl = "http://monibot.com/crud/kirim_data.php?";
-    apiUrl += "mode=save";
-    apiUrl += "&temp=" + temp;
-    apiUrl += "&humd=" + humd;
-    apiUrl += "&ppmch4=" + ppmch4;
-    apiUrl += "&ppmco=" + ppmco;
-
-    // Set header Request
-    client.print(String("GET ") + apiUrl + " HTTP/1.1\r\n" +
-                 "Host: " + host + "\r\n" +
-                 "Connection: close\r\n\r\n");
-
-    // Pastikan tidak berlarut-larut
-    unsigned long timeout = millis();
-    while (client.available() == 0)
-    {
-      if (millis() - timeout > 3000)
-      {
-        Serial.println(">>> Client Timeout !");
-        Serial.println(">>> Operation failed !");
-        client.stop();
-        return;
-      }
-    }
-
-    // Baca hasil balasan dari PHP
-    while (client.available())
-    {
-      String line = client.readStringUntil('\r');
-      Serial.println(line);
-    }
+    kirim_Data(temp, humd, ppmch4, ppmco);
   }
 }

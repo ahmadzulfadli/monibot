@@ -11,7 +11,7 @@ static const char PROGMEM INDEX_HTML[] = R"rawliteral(
 <html>
 
 <head>
-    <title>MONIBOT-UINSUSKA</title>
+    <title>MONIBOT</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
         body {
@@ -102,7 +102,7 @@ static const char PROGMEM INDEX_HTML[] = R"rawliteral(
 </head>
 
 <body>
-    <h1>MONIBOT-UINSUSKA</h1>
+    <h1>MONIBOT</h1>
     <img src="" id="photo">
     <table>
         <tr>
