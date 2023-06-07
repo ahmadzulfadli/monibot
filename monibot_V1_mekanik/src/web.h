@@ -1,3 +1,7 @@
+#ifndef WEB_H
+#define WEB_H
+#include <Arduino.h>
+static const char PROGMEM INDEX_HTML[] = R"rawliteral(
   <html>
 
   <head>
@@ -152,3 +156,5 @@
   </body>
 
   </html>
+)rawliteral";
+#endif // WEB_H

@@ -1,6 +1,5 @@
 #ifndef MINIBOT_CONFIG_H_
 #define MINIBOT_CONFIG_H_
-
 #include <Arduino.h>
 
 #include "esp_camera.h"
@@ -12,6 +11,7 @@
 #include "soc/soc.h"          // disable brownout problems
 #include "soc/rtc_cntl_reg.h" // disable brownout problems
 #include "esp_http_server.h"
+#include <ESP32Servo.h>
 
 // Replace with your network credentials
 const char *ssid = "MyASUS";
@@ -120,10 +120,26 @@ const char *password = "hy12345678";
 #error "Camera model not selected"
 #endif
 
+// motor
 #define MOTOR_1_PIN_1 14
 #define MOTOR_1_PIN_2 15
 #define MOTOR_2_PIN_1 13
 #define MOTOR_2_PIN_2 12
 #define LED_PIN 4
+
+// servo
+#include <ESP32Servo.h>
+#define SERVO_1 14
+#define SERVO_2 15
+
+#define SERVO_STEP 5
+
+Servo servoN1;
+Servo servoN2;
+Servo servo1;
+Servo servo2;
+
+int servo1Pos = 0;
+int servo2Pos = 0;
 
 #endif // MINIBOT_CONFIG_H_
