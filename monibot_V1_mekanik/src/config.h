@@ -128,9 +128,8 @@ const char *password = "hy12345678";
 #define LED_PIN 4
 
 // servo
-#include <ESP32Servo.h>
-#define SERVO_1 14
-#define SERVO_2 15
+#define SERVO_1 16
+#define SERVO_2 0
 
 #define SERVO_STEP 5
 
