@@ -3,88 +3,57 @@
 #include <Arduino.h>
 
 #include "esp_camera.h"
+#include <Arduino.h>
 #include <WiFi.h>
-#include "esp_timer.h"
-#include "img_converters.h"
-#include "Arduino.h"
-#include "fb_gfx.h"
-#include "soc/soc.h"          // disable brownout problems
-#include "soc/rtc_cntl_reg.h" // disable brownout problems
-#include "esp_http_server.h"
+#include <AsyncTCP.h>
+#include <ESPAsyncWebServer.h>
+#include <iostream>
+#include <sstream>
 #include <ESP32Servo.h>
 
-// Replace with your network credentials
-const char *ssid = "MyASUS";
-const char *password = "hy12345678";
+#define PAN_PIN 14
+#define TILT_PIN 15
 
-#define PART_BOUNDARY "123456789000000000000987654321"
+Servo panServo;
+Servo tiltServo;
 
-#define CAMERA_MODEL_AI_THINKER
+struct MOTOR_PINS
+{
+    int pinEn;
+    int pinIN1;
+    int pinIN2;
+};
 
-#if defined(CAMERA_MODEL_WROVER_KIT)
-#define PWDN_GPIO_NUM -1
-#define RESET_GPIO_NUM -1
-#define XCLK_GPIO_NUM 21
-#define SIOD_GPIO_NUM 26
-#define SIOC_GPIO_NUM 27
+std::vector<MOTOR_PINS> motorPins =
+    {
+        {2, 12, 13}, // RIGHT_MOTOR Pins (EnA, IN1, IN2)
+        {2, 1, 3},   // LEFT_MOTOR  Pins (EnB, IN3, IN4)
+};
+#define LIGHT_PIN 4
 
-#define Y9_GPIO_NUM 35
-#define Y8_GPIO_NUM 34
-#define Y7_GPIO_NUM 39
-#define Y6_GPIO_NUM 36
-#define Y5_GPIO_NUM 19
-#define Y4_GPIO_NUM 18
-#define Y3_GPIO_NUM 5
-#define Y2_GPIO_NUM 4
-#define VSYNC_GPIO_NUM 25
-#define HREF_GPIO_NUM 23
-#define PCLK_GPIO_NUM 22
+#define UP 1
+#define DOWN 2
+#define LEFT 3
+#define RIGHT 4
+#define STOP 0
 
-#elif defined(CAMERA_MODEL_M5STACK_PSRAM)
-#define PWDN_GPIO_NUM -1
-#define RESET_GPIO_NUM 15
-#define XCLK_GPIO_NUM 27
-#define SIOD_GPIO_NUM 25
-#define SIOC_GPIO_NUM 23
+#define RIGHT_MOTOR 0
+#define LEFT_MOTOR 1
 
-#define Y9_GPIO_NUM 19
-#define Y8_GPIO_NUM 36
-#define Y7_GPIO_NUM 18
-#define Y6_GPIO_NUM 39
-#define Y5_GPIO_NUM 5
-#define Y4_GPIO_NUM 34
-#define Y3_GPIO_NUM 35
-#define Y2_GPIO_NUM 32
-#define VSYNC_GPIO_NUM 22
-#define HREF_GPIO_NUM 26
-#define PCLK_GPIO_NUM 21
+#define FORWARD 1
+#define BACKWARD -1
 
-#elif defined(CAMERA_MODEL_M5STACK_WITHOUT_PSRAM)
-#define PWDN_GPIO_NUM -1
-#define RESET_GPIO_NUM 15
-#define XCLK_GPIO_NUM 27
-#define SIOD_GPIO_NUM 25
-#define SIOC_GPIO_NUM 23
+const int PWMFreq = 1000; /* 1 KHz */
+const int PWMResolution = 8;
+const int PWMSpeedChannel = 2;
+const int PWMLightChannel = 3;
 
-#define Y9_GPIO_NUM 19
-#define Y8_GPIO_NUM 36
-#define Y7_GPIO_NUM 18
-#define Y6_GPIO_NUM 39
-#define Y5_GPIO_NUM 5
-#define Y4_GPIO_NUM 34
-#define Y3_GPIO_NUM 35
-#define Y2_GPIO_NUM 17
-#define VSYNC_GPIO_NUM 22
-#define HREF_GPIO_NUM 26
-#define PCLK_GPIO_NUM 21
-
-#elif defined(CAMERA_MODEL_AI_THINKER)
+// Camera related constants
 #define PWDN_GPIO_NUM 32
 #define RESET_GPIO_NUM -1
 #define XCLK_GPIO_NUM 0
 #define SIOD_GPIO_NUM 26
 #define SIOC_GPIO_NUM 27
-
 #define Y9_GPIO_NUM 35
 #define Y8_GPIO_NUM 34
 #define Y7_GPIO_NUM 39
@@ -97,48 +66,12 @@ const char *password = "hy12345678";
 #define HREF_GPIO_NUM 23
 #define PCLK_GPIO_NUM 22
 
-#elif defined(CAMERA_MODEL_M5STACK_PSRAM_B)
-#define PWDN_GPIO_NUM -1
-#define RESET_GPIO_NUM 15
-#define XCLK_GPIO_NUM 27
-#define SIOD_GPIO_NUM 22
-#define SIOC_GPIO_NUM 23
+const char *ssid = "MyASUS";
+const char *password = "hy12345678";
 
-#define Y9_GPIO_NUM 19
-#define Y8_GPIO_NUM 36
-#define Y7_GPIO_NUM 18
-#define Y6_GPIO_NUM 39
-#define Y5_GPIO_NUM 5
-#define Y4_GPIO_NUM 34
-#define Y3_GPIO_NUM 35
-#define Y2_GPIO_NUM 32
-#define VSYNC_GPIO_NUM 25
-#define HREF_GPIO_NUM 26
-#define PCLK_GPIO_NUM 21
-
-#else
-#error "Camera model not selected"
-#endif
-
-// motor
-#define MOTOR_1_PIN_1 14
-#define MOTOR_1_PIN_2 15
-#define MOTOR_2_PIN_1 13
-#define MOTOR_2_PIN_2 12
-#define LED_PIN 4
-
-// servo
-#define SERVO_1 16
-#define SERVO_2 0
-
-#define SERVO_STEP 5
-
-Servo servoN1;
-Servo servoN2;
-Servo servo1;
-Servo servo2;
-
-int servo1Pos = 0;
-int servo2Pos = 0;
+AsyncWebServer server(80);
+AsyncWebSocket wsCamera("/Camera");
+AsyncWebSocket wsCarInput("/CarInput");
+uint32_t cameraClientId = 0;
 
 #endif // MINIBOT_CONFIG_H_

@@ -1,185 +1,201 @@
 #ifndef WEB_H
 #define WEB_H
 #include <Arduino.h>
-static const char PROGMEM INDEX_HTML[] = R"rawliteral(
-    <html>
+const char *htmlHomePage PROGMEM = R"HTMLHOMEPAGE(
+<!DOCTYPE html>
+<html>
 
-  <head>
-      <title>MONIBOT</title>
-      <meta name="viewport" content="width=device-width, initial-scale=1">
-      <style>
-      body {
-          background-color: whitesmoke;
-          font-family: Arial;
-          text-align: center;
-          margin: 0px auto;
-          padding-top: 30px;
-      }
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+    .arrows {
+        font-size: 30px;
+        color: #F4EEE0;
+    }
 
-      table {
-          margin-left: auto;
-          margin-right: auto;
-      }
+    td.button {
+        background-color: #079bfd;
+        border-radius: 25%;
+        box-shadow: 5px 5px #888888;
+        text-align: center;
+    }
 
-      td {
-          padding: 8 px;
-      }
+    td.button:active {
+        transform: translate(5px, 5px);
+        box-shadow: none;
+    }
 
-      .button {
-          width: 70px;
-          height: 40px;
-          background-color: #079bfd;
-          border: none;
-          border-radius: 4px;
-          color: #F4EEE0;
-          text-align: center;
-          text-decoration: none;
-          display: inline-block;
-          font-size: 13px;
-          margin: 1px 1px;
-          cursor: pointer;
-          -webkit-touch-callout: none;
-          -webkit-user-select: none;
-          -khtml-user-select: none;
-          -moz-user-select: none;
-          -ms-user-select: none;
-          user-select: none;
-          -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
-      }
+    .noselect {
+        -webkit-touch-callout: none;
+        /* iOS Safari */
+        -webkit-user-select: none;
+        /* Safari */
+        -khtml-user-select: none;
+        /* Konqueror HTML */
+        -moz-user-select: none;
+        /* Firefox */
+        -ms-user-select: none;
+        /* Internet Explorer/Edge */
+        user-select: none;
+        /* Non-prefixed version, currently
+                                      supported by Chrome and Opera */
+    }
 
-      .servo {
-          width: 60px;
-          height: 30px;
-          background-color: #393646;
-          font-size: 11px;
-          margin: 1px 1px;
-      }
+    .slidecontainer {
+        width: 100%;
+    }
 
-      .stop {
-          background-color: #393646;
-          width: 114px;
-      }
+    .slider {
+        -webkit-appearance: none;
+        width: 100%;
+        height: 15px;
+        border-radius: 5px;
+        background: #d3d3d3;
+        outline: none;
+        opacity: 0.7;
+        -webkit-transition: .2s;
+        transition: opacity .2s;
+    }
 
-      .on {
-          background-color: green;
-      }
+    .slider:hover {
+        opacity: 1;
+    }
 
-      .off {
-          background-color: red;
-      }
+    .slider::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 25px;
+        height: 25px;
+        border-radius: 50%;
+        background: red;
+        cursor: pointer;
+    }
 
-      table {
-          margin: 20px auto;
-          border-collapse: collapse;
-      }
+    .slider::-moz-range-thumb {
+        width: 25px;
+        height: 25px;
+        border-radius: 50%;
+        background: #079bfd;
+        cursor: pointer;
+    }
+    </style>
 
-      td {
-          padding: 5px;
-          text-align: center;
-          border: none;
-      }
+</head>
 
-      img {
-          width: auto;
-          max-width: 100%;
-          height: 400px;
-          transform: rotate(180deg);
-      }
-
-      @keyframes buttonAnimation {
-          0% {
-              transform: scale(1);
-          }
-
-          50% {
-              transform: scale(1.1);
-          }
-
-          100% {
-              transform: scale(1);
-          }
-      }
-      </style>
-  </head>
-
-  <body>
-      <h1>MONIBOT</h1>
-      <img src="" id="photo">
-      <table>
-          <tr>
-              <td colspan="3" align="center">
-                  <button class="button" onmousedown="toggleCheckbox('forward'); animateButton(this);"
-                      ontouchstart="toggleCheckbox('forward'); animateButton(this);" onmouseup="toggleCheckbox('stop');"
-                      ontouchend="toggleCheckbox('stop');">Maju</button>
-              </td>
-          </tr>
-          <tr>
-              <td align="center">
-                  <button class="button" onmousedown="toggleCheckbox('left'); animateButton(this);"
-                      ontouchstart="toggleCheckbox('left'); animateButton(this);" onmouseup="toggleCheckbox('stop');"
-                      ontouchend="toggleCheckbox('stop');">Kiri</button>
-              </td>
-              <td align="center">
-                  <button class="button stop" onmousedown="toggleCheckbox('stop'); animateButton(this);"
-                      ontouchstart="toggleCheckbox('stop');">MONIBOT</button>
-              </td>
-              <td align="center">
-                  <button class="button" onmousedown="toggleCheckbox('right'); animateButton(this);"
-                      ontouchstart="toggleCheckbox('right'); animateButton(this);" onmouseup="toggleCheckbox('stop');"
-                      ontouchend="toggleCheckbox('stop');">Kanan</button>
-          </tr>
-            <td colspan="3" align="center">
-                <button class="button" onmousedown="toggleCheckbox('backward'); animateButton(this);"
-                    ontouchstart="toggleCheckbox('backward'); animateButton(this);" onmouseup="toggleCheckbox('stop');"
-                    ontouchend="toggleCheckbox('stop');">Mundur</button>
+<body class="noselect" align="center" style="background-color:white">
+    <table id="mainTable" style="padding: 0px;margin:0px;width:400px;margin:auto;table-layout:fixed" CELLSPACING=10>
+        <tr style="align-items: center">
+            <td><img id="cameraImage" src="" style="width:380px;height:400px;"></td>
+        </tr>
+        <tr>
+            <td></td>
+            <td class="button" ontouchstart='sendButtonInput("MoveCar","1")'
+                ontouchend='sendButtonInput("MoveCar","0")'><span class="arrows">&#8679;</span></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td class="button" ontouchstart='sendButtonInput("MoveCar","3")'
+                ontouchend='sendButtonInput("MoveCar","0")'><span class="arrows">&#8678;</span></td>
+            <td class="button"><span style="font-size: 12px; color:#F4EEE0; font-weight: bold;">MONIBOT</span></td>
+            <td class="button" ontouchstart='sendButtonInput("MoveCar","4")'
+                ontouchend='sendButtonInput("MoveCar","0")'><span class="arrows">&#8680;</span></td>
+        </tr>
+        <tr>
+            <td></td>
+            <td class="button" ontouchstart='sendButtonInput("MoveCar","2")'
+                ontouchend='sendButtonInput("MoveCar","0")'><span class="arrows">&#8681;</span></td>
+            <td></td>
+        </tr>
+        <tr></tr>
+        <tr></tr>
+        <tr>
+            <td style="text-align:left"><b>Kecepatan:</b></td>
+            <td colspan=2>
+                <div class="slidecontainer">
+                    <input type="range" min="0" max="255" value="150" class="slider" id="Speed"
+                        oninput='sendButtonInput("Speed",value)'>
+                </div>
             </td>
-          </tr>
+        </tr>
+        <tr>
+            <td style="text-align:left"><b>LED:</b></td>
+            <td colspan=2>
+                <div class="slidecontainer">
+                    <input type="range" min="0" max="255" value="0" class="slider" id="Light"
+                        oninput='sendButtonInput("Light",value)'>
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td style="text-align:left"><b>CAM-H:</b></td>
+            <td colspan=2>
+                <div class="slidecontainer">
+                    <input type="range" min="0" max="180" value="90" class="slider" id="Pan"
+                        oninput='sendButtonInput("Pan",value)'>
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td style="text-align:left"><b>CAM-V:</b></td>
+            <td colspan=2>
+                <div class="slidecontainer">
+                    <input type="range" min="0" max="180" value="90" class="slider" id="Tilt"
+                        oninput='sendButtonInput("Tilt",value)'>
+                </div>
+            </td>
+        </tr>
+    </table>
 
-          <tr>
-              <td colspan="4" align="center">
-                  <button class="button servo" onmousedown="toggleCheckbox('servo_up'); animateButton(this);"
-                      ontouchstart="toggleCheckbox('servo_up'); animateButton(this);">Atas</button>
+    <script>
+    var webSocketCameraUrl = "ws:\/\/" + window.location.hostname + "/Camera";
+    var webSocketCarInputUrl = "ws:\/\/" + window.location.hostname + "/CarInput";
+    var websocketCamera;
+    var websocketCarInput;
 
-                  <button class="button servo" onmousedown="toggleCheckbox('servo_left'); animateButton(this);"
-                      ontouchstart="toggleCheckbox('servo_left'); animateButton(this);">Kiri</button>
+    function initCameraWebSocket() {
+        websocketCamera = new WebSocket(webSocketCameraUrl);
+        websocketCamera.binaryType = 'blob';
+        websocketCamera.onopen = function(event) {};
+        websocketCamera.onclose = function(event) {
+            setTimeout(initCameraWebSocket, 2000);
+        };
+        websocketCamera.onmessage = function(event) {
+            var imageId = document.getElementById("cameraImage");
+            imageId.src = URL.createObjectURL(event.data);
+        };
+    }
 
-                  <button class="button servo" onmousedown="toggleCheckbox('servo_right'); animateButton(this);"
-                      ontouchstart="toggleCheckbox('servo_right'); animateButton(this);">Kanan</button>
+    function initCarInputWebSocket() {
+        websocketCarInput = new WebSocket(webSocketCarInputUrl);
+        websocketCarInput.onopen = function(event) {
+            sendButtonInput("Speed", document.getElementById("Speed").value);
+            sendButtonInput("Light", document.getElementById("Light").value);
+            sendButtonInput("Pan", document.getElementById("Pan").value);
+            sendButtonInput("Tilt", document.getElementById("Tilt").value);
+        };
+        websocketCarInput.onclose = function(event) {
+            setTimeout(initCarInputWebSocket, 2000);
+        };
+        websocketCarInput.onmessage = function(event) {};
+    }
 
-                  <button class="button servo" onmousedown="toggleCheckbox('servo_backward'); animateButton(this);"
-                      ontouchstart="toggleCheckbox('servo_backward'); animateButton(this);">Bawah</button>
-              </td>
-          </tr>
+    function initWebSocket() {
+        initCameraWebSocket();
+        initCarInputWebSocket();
+    }
 
-          <tr>
-              <td colspan="3" align="center">
-                  <button class="button on" onmousedown="toggleCheckbox('lampu_hidup'); animateButton(this);"
-                      ontouchstart="toggleCheckbox('lampu_hidup'); animateButton(this);">LED<br>Hidup</button>
-                  <button class="button off" onmousedown="toggleCheckbox('lampu_mati'); animateButton(this);"
-                      ontouchstart="toggleCheckbox('lampu_mati'); animateButton(this);">LED<br>Mati</button>
-              </td>
-          </tr>
+    function sendButtonInput(key, value) {
+        var data = key + "," + value;
+        websocketCarInput.send(data);
+    }
 
+    window.onload = initWebSocket;
+    document.getElementById("mainTable").addEventListener("touchend", function(event) {
+        event.preventDefault()
+    });
+    </script>
+</body>
 
-      </table>
-      <script>
-      function toggleCheckbox(x) {
-          var xhr = new XMLHttpRequest();
-          xhr.open("GET", "/action?go=" + x, true);
-          xhr.send();
-      }
-
-      function animateButton(button) {
-          button.style.animation = 'buttonAnimation 0.3s';
-          setTimeout(function() {
-              button.style.animation = '';
-          }, 300);
-      }
-
-      window.onload = document.getElementById("photo").src = window.location.href.slice(0, -1) + ":81/stream";
-      </script>
-  </body>
-
-  </html>
-)rawliteral";
+</html>
+)HTMLHOMEPAGE";
 #endif // WEB_H

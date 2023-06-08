@@ -1,367 +1,291 @@
-#include <config.h>
 #include <web.h>
+#include <config.h>
 
-static const char *_STREAM_CONTENT_TYPE = "multipart/x-mixed-replace;boundary=" PART_BOUNDARY;
-static const char *_STREAM_BOUNDARY = "\r\n--" PART_BOUNDARY "\r\n";
-static const char *_STREAM_PART = "Content-Type: image/jpeg\r\nContent-Length: %u\r\n\r\n";
-
-httpd_handle_t camera_httpd = NULL;
-httpd_handle_t stream_httpd = NULL;
-
-static esp_err_t index_handler(httpd_req_t *req)
+void rotateMotor(int motorNumber, int motorDirection)
 {
-  httpd_resp_set_type(req, "text/html");
-  return httpd_resp_send(req, (const char *)INDEX_HTML, strlen(INDEX_HTML));
-}
-
-static esp_err_t stream_handler(httpd_req_t *req)
-{
-  camera_fb_t *fb = NULL;
-  esp_err_t res = ESP_OK;
-  size_t _jpg_buf_len = 0;
-  uint8_t *_jpg_buf = NULL;
-  char *part_buf[64];
-
-  res = httpd_resp_set_type(req, _STREAM_CONTENT_TYPE);
-  if (res != ESP_OK)
-  {
-    return res;
-  }
-
-  while (true)
-  {
-    fb = esp_camera_fb_get();
-    if (!fb)
+    if (motorDirection == FORWARD)
     {
-      Serial.println("Camera capture failed");
-      res = ESP_FAIL;
+        digitalWrite(motorPins[motorNumber].pinIN1, HIGH);
+        digitalWrite(motorPins[motorNumber].pinIN2, LOW);
+    }
+    else if (motorDirection == BACKWARD)
+    {
+        digitalWrite(motorPins[motorNumber].pinIN1, LOW);
+        digitalWrite(motorPins[motorNumber].pinIN2, HIGH);
     }
     else
     {
-      if (fb->width > 400)
-      {
-        if (fb->format != PIXFORMAT_JPEG)
+        digitalWrite(motorPins[motorNumber].pinIN1, LOW);
+        digitalWrite(motorPins[motorNumber].pinIN2, LOW);
+    }
+}
+
+void moveCar(int inputValue)
+{
+    Serial.printf("Got value as %d\n", inputValue);
+    switch (inputValue)
+    {
+
+    case UP:
+        rotateMotor(RIGHT_MOTOR, FORWARD);
+        rotateMotor(LEFT_MOTOR, FORWARD);
+        break;
+
+    case DOWN:
+        rotateMotor(RIGHT_MOTOR, BACKWARD);
+        rotateMotor(LEFT_MOTOR, BACKWARD);
+        break;
+
+    case LEFT:
+        rotateMotor(RIGHT_MOTOR, FORWARD);
+        rotateMotor(LEFT_MOTOR, BACKWARD);
+        break;
+
+    case RIGHT:
+        rotateMotor(RIGHT_MOTOR, BACKWARD);
+        rotateMotor(LEFT_MOTOR, FORWARD);
+        break;
+
+    case STOP:
+        rotateMotor(RIGHT_MOTOR, STOP);
+        rotateMotor(LEFT_MOTOR, STOP);
+        break;
+
+    default:
+        rotateMotor(RIGHT_MOTOR, STOP);
+        rotateMotor(LEFT_MOTOR, STOP);
+        break;
+    }
+}
+
+void handleRoot(AsyncWebServerRequest *request)
+{
+    request->send_P(200, "text/html", htmlHomePage);
+}
+
+void handleNotFound(AsyncWebServerRequest *request)
+{
+    request->send(404, "text/plain", "File Not Found");
+}
+
+void onCarInputWebSocketEvent(AsyncWebSocket *server,
+                              AsyncWebSocketClient *client,
+                              AwsEventType type,
+                              void *arg,
+                              uint8_t *data,
+                              size_t len)
+{
+    switch (type)
+    {
+    case WS_EVT_CONNECT:
+        Serial.printf("WebSocket client #%u connected from %s\n", client->id(), client->remoteIP().toString().c_str());
+        break;
+    case WS_EVT_DISCONNECT:
+        Serial.printf("WebSocket client #%u disconnected\n", client->id());
+        moveCar(0);
+        ledcWrite(PWMLightChannel, 0);
+        panServo.write(90);
+        tiltServo.write(90);
+        break;
+    case WS_EVT_DATA:
+        AwsFrameInfo *info;
+        info = (AwsFrameInfo *)arg;
+        if (info->final && info->index == 0 && info->len == len && info->opcode == WS_TEXT)
         {
-          bool jpeg_converted = frame2jpg(fb, 80, &_jpg_buf, &_jpg_buf_len);
-          esp_camera_fb_return(fb);
-          fb = NULL;
-          if (!jpeg_converted)
-          {
-            Serial.println("JPEG compression failed");
-            res = ESP_FAIL;
-          }
+            std::string myData = "";
+            myData.assign((char *)data, len);
+            std::istringstream ss(myData);
+            std::string key, value;
+            std::getline(ss, key, ',');
+            std::getline(ss, value, ',');
+            Serial.printf("Key [%s] Value[%s]\n", key.c_str(), value.c_str());
+            int valueInt = atoi(value.c_str());
+            if (key == "MoveCar")
+            {
+                moveCar(valueInt);
+            }
+            else if (key == "Speed")
+            {
+                ledcWrite(PWMSpeedChannel, valueInt);
+            }
+            else if (key == "Light")
+            {
+                ledcWrite(PWMLightChannel, valueInt);
+            }
+            else if (key == "Pan")
+            {
+                panServo.write(valueInt);
+            }
+            else if (key == "Tilt")
+            {
+                tiltServo.write(valueInt);
+            }
         }
-        else
-        {
-          _jpg_buf_len = fb->len;
-          _jpg_buf = fb->buf;
-        }
-      }
+        break;
+    case WS_EVT_PONG:
+    case WS_EVT_ERROR:
+        break;
+    default:
+        break;
     }
-    if (res == ESP_OK)
-    {
-      size_t hlen = snprintf((char *)part_buf, 64, _STREAM_PART, _jpg_buf_len);
-      res = httpd_resp_send_chunk(req, (const char *)part_buf, hlen);
-    }
-    if (res == ESP_OK)
-    {
-      res = httpd_resp_send_chunk(req, (const char *)_jpg_buf, _jpg_buf_len);
-    }
-    if (res == ESP_OK)
-    {
-      res = httpd_resp_send_chunk(req, _STREAM_BOUNDARY, strlen(_STREAM_BOUNDARY));
-    }
-    if (fb)
-    {
-      esp_camera_fb_return(fb);
-      fb = NULL;
-      _jpg_buf = NULL;
-    }
-    else if (_jpg_buf)
-    {
-      free(_jpg_buf);
-      _jpg_buf = NULL;
-    }
-    if (res != ESP_OK)
-    {
-      break;
-    }
-    // Serial.printf("MJPG: %uB\n",(uint32_t)(_jpg_buf_len));
-  }
-  return res;
 }
 
-static esp_err_t cmd_handler(httpd_req_t *req)
+void onCameraWebSocketEvent(AsyncWebSocket *server,
+                            AsyncWebSocketClient *client,
+                            AwsEventType type,
+                            void *arg,
+                            uint8_t *data,
+                            size_t len)
 {
-  char *buf;
-  size_t buf_len;
-  char variable[32] = {
-      0,
-  };
-
-  buf_len = httpd_req_get_url_query_len(req) + 1;
-  if (buf_len > 1)
-  {
-    buf = (char *)malloc(buf_len);
-    if (!buf)
+    switch (type)
     {
-      httpd_resp_send_500(req);
-      return ESP_FAIL;
+    case WS_EVT_CONNECT:
+        Serial.printf("WebSocket client #%u connected from %s\n", client->id(), client->remoteIP().toString().c_str());
+        cameraClientId = client->id();
+        break;
+    case WS_EVT_DISCONNECT:
+        Serial.printf("WebSocket client #%u disconnected\n", client->id());
+        cameraClientId = 0;
+        break;
+    case WS_EVT_DATA:
+        break;
+    case WS_EVT_PONG:
+    case WS_EVT_ERROR:
+        break;
+    default:
+        break;
     }
-    if (httpd_req_get_url_query_str(req, buf, buf_len) == ESP_OK)
-    {
-      if (httpd_query_key_value(buf, "go", variable, sizeof(variable)) == ESP_OK)
-      {
-      }
-      else
-      {
-        free(buf);
-        httpd_resp_send_404(req);
-        return ESP_FAIL;
-      }
-    }
-    else
-    {
-      free(buf);
-      httpd_resp_send_404(req);
-      return ESP_FAIL;
-    }
-    free(buf);
-  }
-  else
-  {
-    httpd_resp_send_404(req);
-    return ESP_FAIL;
-  }
-
-  sensor_t *s = esp_camera_sensor_get();
-  int res = 0;
-
-  if (!strcmp(variable, "forward"))
-  {
-    Serial.println("Forward");
-    digitalWrite(MOTOR_1_PIN_1, 1);
-    digitalWrite(MOTOR_1_PIN_2, 0);
-    digitalWrite(MOTOR_2_PIN_1, 1);
-    digitalWrite(MOTOR_2_PIN_2, 0);
-  }
-  else if (!strcmp(variable, "left"))
-  {
-    Serial.println("Left");
-    digitalWrite(MOTOR_1_PIN_1, 1);
-    digitalWrite(MOTOR_1_PIN_2, 0);
-    digitalWrite(MOTOR_2_PIN_1, 0);
-    digitalWrite(MOTOR_2_PIN_2, 1);
-  }
-  else if (!strcmp(variable, "right"))
-  {
-    Serial.println("Right");
-    digitalWrite(MOTOR_1_PIN_1, 0);
-    digitalWrite(MOTOR_1_PIN_2, 1);
-    digitalWrite(MOTOR_2_PIN_1, 1);
-    digitalWrite(MOTOR_2_PIN_2, 0);
-  }
-  else if (!strcmp(variable, "backward"))
-  {
-    Serial.println("Backward");
-    digitalWrite(MOTOR_1_PIN_1, 0);
-    digitalWrite(MOTOR_1_PIN_2, 1);
-    digitalWrite(MOTOR_2_PIN_1, 0);
-    digitalWrite(MOTOR_2_PIN_2, 1);
-  }
-  else if (!strcmp(variable, "stop"))
-  {
-    Serial.println("Stop");
-    digitalWrite(MOTOR_1_PIN_1, 0);
-    digitalWrite(MOTOR_1_PIN_2, 0);
-    digitalWrite(MOTOR_2_PIN_1, 0);
-    digitalWrite(MOTOR_2_PIN_2, 0);
-  }
-  else if (!strcmp(variable, "servo_up"))
-  {
-    if (servo1Pos <= 170)
-    {
-      servo1Pos += 10;
-      servo1.write(servo1Pos);
-    }
-    Serial.println(servo1Pos);
-    Serial.println("Up");
-  }
-  else if (!strcmp(variable, "servo_left"))
-  {
-    if (servo2Pos <= 170)
-    {
-      servo2Pos += 10;
-      servo2.write(servo2Pos);
-    }
-    Serial.println(servo2Pos);
-    Serial.println("Left");
-  }
-  else if (!strcmp(variable, "servo_right"))
-  {
-    if (servo2Pos >= 10)
-    {
-      servo2Pos -= 10;
-      servo2.write(servo2Pos);
-    }
-    Serial.println(servo2Pos);
-    Serial.println("Right");
-  }
-  else if (!strcmp(variable, "servo_down"))
-  {
-    if (servo1Pos >= 10)
-    {
-      servo1Pos -= 10;
-      servo1.write(servo1Pos);
-    }
-    Serial.println(servo1Pos);
-    Serial.println("Down");
-  }
-  else if (!strcmp(variable, "lampu_hidup"))
-  {
-    Serial.println("lampu_hidup");
-    digitalWrite(LED_PIN, 1);
-  }
-  else if (!strcmp(variable, "lampu_mati"))
-  {
-    Serial.println("lampu_mati");
-    digitalWrite(LED_PIN, 0);
-  }
-  else
-  {
-    res = -1;
-  }
-
-  if (res)
-  {
-    return httpd_resp_send_500(req);
-  }
-
-  httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
-  return httpd_resp_send(req, NULL, 0);
 }
 
-void startCameraServer()
+void setupCamera()
 {
-  httpd_config_t config = HTTPD_DEFAULT_CONFIG();
-  config.server_port = 80;
-  httpd_uri_t index_uri = {
-      .uri = "/",
-      .method = HTTP_GET,
-      .handler = index_handler,
-      .user_ctx = NULL};
+    camera_config_t config;
+    config.ledc_channel = LEDC_CHANNEL_4;
+    config.ledc_timer = LEDC_TIMER_2;
+    config.pin_d0 = Y2_GPIO_NUM;
+    config.pin_d1 = Y3_GPIO_NUM;
+    config.pin_d2 = Y4_GPIO_NUM;
+    config.pin_d3 = Y5_GPIO_NUM;
+    config.pin_d4 = Y6_GPIO_NUM;
+    config.pin_d5 = Y7_GPIO_NUM;
+    config.pin_d6 = Y8_GPIO_NUM;
+    config.pin_d7 = Y9_GPIO_NUM;
+    config.pin_xclk = XCLK_GPIO_NUM;
+    config.pin_pclk = PCLK_GPIO_NUM;
+    config.pin_vsync = VSYNC_GPIO_NUM;
+    config.pin_href = HREF_GPIO_NUM;
+    config.pin_sscb_sda = SIOD_GPIO_NUM;
+    config.pin_sscb_scl = SIOC_GPIO_NUM;
+    config.pin_pwdn = PWDN_GPIO_NUM;
+    config.pin_reset = RESET_GPIO_NUM;
+    config.xclk_freq_hz = 20000000;
+    config.pixel_format = PIXFORMAT_JPEG;
 
-  httpd_uri_t cmd_uri = {
-      .uri = "/action",
-      .method = HTTP_GET,
-      .handler = cmd_handler,
-      .user_ctx = NULL};
-  httpd_uri_t stream_uri = {
-      .uri = "/stream",
-      .method = HTTP_GET,
-      .handler = stream_handler,
-      .user_ctx = NULL};
-  if (httpd_start(&camera_httpd, &config) == ESP_OK)
-  {
-    httpd_register_uri_handler(camera_httpd, &index_uri);
-    httpd_register_uri_handler(camera_httpd, &cmd_uri);
-  }
-  config.server_port += 1;
-  config.ctrl_port += 1;
-  if (httpd_start(&stream_httpd, &config) == ESP_OK)
-  {
-    httpd_register_uri_handler(stream_httpd, &stream_uri);
-  }
-}
-
-void setup()
-{
-  WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0); // disable brownout detector
-
-  // motor
-  pinMode(MOTOR_1_PIN_1, OUTPUT);
-  pinMode(MOTOR_1_PIN_2, OUTPUT);
-  pinMode(MOTOR_2_PIN_1, OUTPUT);
-  pinMode(MOTOR_2_PIN_2, OUTPUT);
-
-  // servo
-  servo1.setPeriodHertz(50); // standard 50 hz servo
-  servo2.setPeriodHertz(50); // standard 50 hz servo
-  servoN1.attach(2, 1000, 2000);
-  servoN2.attach(13, 1000, 2000);
-
-  servo1.attach(SERVO_1, 1000, 2000);
-  servo2.attach(SERVO_2, 1000, 2000);
-
-  servo1.write(servo1Pos);
-  servo2.write(servo2Pos);
-
-  // LED
-  pinMode(LED_PIN, OUTPUT);
-
-  Serial.begin(115200);
-  Serial.setDebugOutput(false);
-
-  camera_config_t config;
-  config.ledc_channel = LEDC_CHANNEL_0;
-  config.ledc_timer = LEDC_TIMER_0;
-  config.pin_d0 = Y2_GPIO_NUM;
-  config.pin_d1 = Y3_GPIO_NUM;
-  config.pin_d2 = Y4_GPIO_NUM;
-  config.pin_d3 = Y5_GPIO_NUM;
-  config.pin_d4 = Y6_GPIO_NUM;
-  config.pin_d5 = Y7_GPIO_NUM;
-  config.pin_d6 = Y8_GPIO_NUM;
-  config.pin_d7 = Y9_GPIO_NUM;
-  config.pin_xclk = XCLK_GPIO_NUM;
-  config.pin_pclk = PCLK_GPIO_NUM;
-  config.pin_vsync = VSYNC_GPIO_NUM;
-  config.pin_href = HREF_GPIO_NUM;
-  config.pin_sscb_sda = SIOD_GPIO_NUM;
-  config.pin_sscb_scl = SIOC_GPIO_NUM;
-  config.pin_pwdn = PWDN_GPIO_NUM;
-  config.pin_reset = RESET_GPIO_NUM;
-  config.xclk_freq_hz = 20000000;
-  config.pixel_format = PIXFORMAT_JPEG;
-
-  if (psramFound())
-  {
     config.frame_size = FRAMESIZE_VGA;
     config.jpeg_quality = 10;
-    config.fb_count = 2;
-  }
-  else
-  {
-    config.frame_size = FRAMESIZE_SVGA;
-    config.jpeg_quality = 12;
     config.fb_count = 1;
-  }
 
-  // Camera init
-  esp_err_t err = esp_camera_init(&config);
-  if (err != ESP_OK)
-  {
-    Serial.printf("Camera init failed with error 0x%x", err);
-    return;
-  }
-  // Wi-Fi connection
-  WiFi.begin(ssid, password);
-  while (WiFi.status() != WL_CONNECTED)
-  {
-    delay(500);
-    Serial.print(".");
-  }
-  Serial.println("");
-  Serial.println("WiFi connected");
+    // camera init
+    esp_err_t err = esp_camera_init(&config);
+    if (err != ESP_OK)
+    {
+        Serial.printf("Camera init failed with error 0x%x", err);
+        return;
+    }
 
-  Serial.print("Camera Stream Ready! Go to: http://");
-  Serial.println(WiFi.localIP());
+    if (psramFound())
+    {
+        heap_caps_malloc_extmem_enable(20000);
+        Serial.printf("PSRAM initialized. malloc to take memory from psram above this size");
+    }
+}
 
-  // Start streaming web server
-  startCameraServer();
-  // digitalWrite(LED_PIN, HIGH);
+void sendCameraPicture()
+{
+    if (cameraClientId == 0)
+    {
+        return;
+    }
+    unsigned long startTime1 = millis();
+    // capture a frame
+    camera_fb_t *fb = esp_camera_fb_get();
+    if (!fb)
+    {
+        Serial.println("Frame buffer could not be acquired");
+        return;
+    }
+
+    unsigned long startTime2 = millis();
+    wsCamera.binary(cameraClientId, fb->buf, fb->len);
+    esp_camera_fb_return(fb);
+
+    // Wait for message to be delivered
+    while (true)
+    {
+        AsyncWebSocketClient *clientPointer = wsCamera.client(cameraClientId);
+        if (!clientPointer || !(clientPointer->queueIsFull()))
+        {
+            break;
+        }
+        delay(1);
+    }
+
+    unsigned long startTime3 = millis();
+    Serial.printf("Time taken Total: %d|%d|%d\n", startTime3 - startTime1, startTime2 - startTime1, startTime3 - startTime2);
+}
+
+void setUpPinModes()
+{
+    panServo.attach(PAN_PIN);
+    tiltServo.attach(TILT_PIN);
+
+    // Set up PWM
+    ledcSetup(PWMSpeedChannel, PWMFreq, PWMResolution);
+    ledcSetup(PWMLightChannel, PWMFreq, PWMResolution);
+
+    for (int i = 0; i < motorPins.size(); i++)
+    {
+        pinMode(motorPins[i].pinEn, OUTPUT);
+        pinMode(motorPins[i].pinIN1, OUTPUT);
+        pinMode(motorPins[i].pinIN2, OUTPUT);
+        /* Attach the PWM Channel to the motor enb Pin */
+        ledcAttachPin(motorPins[i].pinEn, PWMSpeedChannel);
+    }
+    moveCar(STOP);
+
+    pinMode(LIGHT_PIN, OUTPUT);
+    ledcAttachPin(LIGHT_PIN, PWMLightChannel);
+}
+
+void setup(void)
+{
+    setUpPinModes();
+    // Serial.begin(115200);
+
+    WiFi.softAP(ssid, password);
+    IPAddress IP = WiFi.softAPIP();
+    Serial.print("AP IP address: ");
+    Serial.println(IP);
+
+    server.on("/", HTTP_GET, handleRoot);
+    server.onNotFound(handleNotFound);
+
+    wsCamera.onEvent(onCameraWebSocketEvent);
+    server.addHandler(&wsCamera);
+
+    wsCarInput.onEvent(onCarInputWebSocketEvent);
+    server.addHandler(&wsCarInput);
+
+    server.begin();
+    Serial.println("HTTP server started");
+
+    setupCamera();
 }
 
 void loop()
 {
+    wsCamera.cleanupClients();
+    wsCarInput.cleanupClients();
+    sendCameraPicture();
+    Serial.printf("SPIRam Total heap %d, SPIRam Free Heap %d\n", ESP.getPsramSize(), ESP.getFreePsram());
 }
