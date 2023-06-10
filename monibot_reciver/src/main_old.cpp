@@ -241,16 +241,71 @@ void setup_fuzzy()
   //-------------------------------------------------------------------------------------------------
 }
 
+// bunyi buzzer
+void bunyi_buzzer(float frekuensi)
+{
+  tone(BUZZER, frekuensi);
+  delay(100);
+  noTone(BUZZER);
+}
+
 void setup()
 {
   // NodeMCU Utility
   Serial.begin(115200);
+
+  // OLED
+
+  if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C))
+  {
+    Serial.println(F("SSD1306 alokasi gagal"));
+    for (;;)
+      ;
+  }
+  display.clearDisplay();
 
   // BUZZER
   pinMode(BUZZER, OUTPUT);
 
   // SETUP FUZZY
   setup_fuzzy();
+
+  // NETWORKING
+  Serial.print("Connecting to ");
+  Serial.println(ssid);
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED)
+  {
+    delay(500);
+    Serial.print(".");
+    display.setTextColor(WHITE);
+    display.setTextSize(1);
+    display.setCursor(0, 0);
+    display.println("Menguhubungkan ...");
+    display.display();
+  }
+  Serial.println(""); // NETWORKING
+  Serial.print("Connecting to ");
+  Serial.println(ssid);
+
+  // Tampilkan pesan ke OLED
+  display.clearDisplay();
+  display.setTextColor(WHITE);
+  display.setTextSize(1);
+  display.setCursor(0, 0);
+  display.println("Sensor Data");
+  display.display();
+  Serial.println("WiFi connected.");
+  Serial.println("IP address: ");
+  Serial.println(WiFi.localIP());
+
+  // Tampilkan pesan ke OLED
+  display.clearDisplay();
+  display.setTextColor(WHITE);
+  display.setTextSize(1);
+  display.setCursor(0, 0);
+  display.println("Sensor Data");
+  display.display();
 
   // LORA
   while (!Serial)
@@ -269,44 +324,7 @@ void setup()
   LoRa.enableCrc();
   Serial.println("LoRa Receiver Ready!");
 
-  // OLED
-
-  if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C))
-  {
-    Serial.println(F("SSD1306 alokasi gagal"));
-    for (;;)
-      ;
-  }
-  display.clearDisplay();
-
-  // NETWORKING
-  Serial.print("Connecting to ");
-  Serial.println(ssid);
-  WiFi.begin(ssid, password);
-  while (WiFi.status() != WL_CONNECTED)
-  {
-    delay(500);
-    Serial.print(".");
-    display.setTextColor(WHITE);
-    display.setTextSize(1);
-    display.setCursor(0, 0);
-    display.println("Menguhubungkan ...");
-    display.display();
-  }
-  Serial.println("");
-  Serial.println("WiFi connected.");
-  Serial.println("IP address: ");
-  Serial.println(WiFi.localIP());
-
-  // Tampilkan pesan ke OLED
-  display.clearDisplay();
-  display.setTextColor(WHITE);
-  display.setTextSize(1);
-  display.setCursor(0, 0);
-  display.println("Sensor Data");
-  display.display();
-
-  // bunyikan buzzer
+    // bunyikan buzzer
   tone(BUZZER, 1000);
   delay(1000);
   noTone(BUZZER);
@@ -359,10 +377,10 @@ void loop()
     kirim_Data(temp, humd, ppmch4, ppmco);
 
     // rubah tipe variabel string ke float
-    float temp_float = temp.toFloat();
-    float humd_float = humd.toFloat();
-    float ppmch4_float = ppmch4.toFloat();
-    float ppmco_float = ppmco.toFloat();
+    temp_float = temp.toFloat();
+    humd_float = humd.toFloat();
+    ppmch4_float = ppmch4.toFloat();
+    ppmco_float = ppmco.toFloat();
 
     // Set input
     fuzzy->setInput(1, temp_float);
@@ -373,31 +391,35 @@ void loop()
     fuzzy->fuzzify();
 
     // Running the Defuzzification
-    float output1 = fuzzy->defuzzify(1);
-    float output2 = fuzzy->defuzzify(2);
-    float output3 = fuzzy->defuzzify(3);
+    output1 = fuzzy->defuzzify(1);
+    output2 = fuzzy->defuzzify(2);
+    output3 = fuzzy->defuzzify(3);
+  }
+  // memberikan peringatan
 
-    if (temp_float > 30 or ppmch4_float > 30 or ppmco_float > 30)
+  if (temp_float > 30 or ppmch4_float > 30 or ppmco_float > 30)
+  {
+    if (output1 > output2 and output1 > output3)
     {
-      if (output1 > output2 and output1 > output3)
-      {
-        Serial.print("Frekuensi Buzzer1: ");
-        Serial.println(output1);
-      }
-      else if (output2 > output1 and output2 > output3)
-      {
-        Serial.print("Frekuensi Buzzer2: ");
-        Serial.println(output2);
-      }
-      else if (output3 > output1 and output3 > output2)
-      {
-        Serial.print("Frekuensi Buzzer3: ");
-        Serial.println(output3);
-      }
-      else
-      {
-        Serial.print("Aman");
-      }
+      Serial.print("Frekuensi Buzzer1: ");
+      Serial.println(output1);
+      bunyi_buzzer(output1);
+    }
+    else if (output2 > output1 and output2 > output3)
+    {
+      Serial.print("Frekuensi Buzzer2: ");
+      Serial.println(output2);
+      bunyi_buzzer(output2);
+    }
+    else if (output3 > output1 and output3 > output2)
+    {
+      Serial.print("Frekuensi Buzzer3: ");
+      Serial.println(output3);
+      bunyi_buzzer(output3);
+    }
+    else
+    {
+      Serial.print("Aman");
     }
   }
 }

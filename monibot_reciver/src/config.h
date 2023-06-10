@@ -42,4 +42,6 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 // FUZZY
 Fuzzy *fuzzy = new Fuzzy();
 
+float temp_float, humd_float, ppmch4_float, ppmco_float, output1, output2, output3;
+
 #endif // MONIBOT_TRANSMITTER_CONFIG_H_
