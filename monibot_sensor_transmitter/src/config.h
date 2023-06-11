@@ -24,7 +24,7 @@
 // MQ4
 #define RatioMQ4CleanAir 9.83 // RS / R0 = 9.83 ppm
 #define MQ4_PIN 35
-MQ2 mq4(MQ4_PIN);
+MQ4 mq4(MQ4_PIN);
 
 // MQ7
 #define RatioMQ7CleanAir 27.5 // RS / R0 = 27.5 ppm

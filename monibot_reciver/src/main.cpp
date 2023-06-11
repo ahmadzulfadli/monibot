@@ -29,8 +29,6 @@ void tampilkan_Data(String temp, String humd, String ppmch4, String ppmco)
   display.println("Kelembaban: " + String(humd) + "%");
   display.println("MQ4: " + String(ppmch4));
   display.println("MQ7: " + String(ppmco));
-
-  display.display();
 }
 
 // kiriman data ke web server
@@ -95,56 +93,8 @@ void kirim_Data(String temp, String humd, String ppmch4, String ppmco)
 void setup_fuzzy()
 {
   //-------------------------------------------------------------------------------------------------
-  // Input temp
-  FuzzyInput *temp = new FuzzyInput(1);
-  FuzzySet *small = new FuzzySet(0, 5, 10, 15);
-  temp->addFuzzySet(small);
-  FuzzySet *safe = new FuzzySet(15, 20, 25, 30);
-  temp->addFuzzySet(safe);
-  FuzzySet *big = new FuzzySet(30, 35, 40, 45);
-  temp->addFuzzySet(big);
-  fuzzy->addFuzzyInput(temp);
-
-  // Instantiating a FuzzyOutput objects
-  FuzzyOutput *tune_buzz = new FuzzyOutput(1);
-  FuzzySet *slow = new FuzzySet(0, 1000, 1000, 2000);
-  tune_buzz->addFuzzySet(slow);
-  FuzzySet *average = new FuzzySet(1000, 2000, 3000, 4000);
-  tune_buzz->addFuzzySet(average);
-  FuzzySet *fast = new FuzzySet(3000, 4000, 4500, 5000);
-  tune_buzz->addFuzzySet(fast);
-  fuzzy->addFuzzyOutput(tune_buzz);
-
-  // Building FuzzyRule "IF Input = small THEN TuneBuzz = slow"
-  // Instantiating a FuzzyRuleAntecedent objects
-  FuzzyRuleAntecedent *ifInputSmall = new FuzzyRuleAntecedent();
-  ifInputSmall->joinSingle(small);
-  FuzzyRuleConsequent *thenTuneBuzzSlow = new FuzzyRuleConsequent();
-  thenTuneBuzzSlow->addOutput(slow);
-  FuzzyRule *fuzzyRule01 = new FuzzyRule(1, ifInputSmall, thenTuneBuzzSlow);
-  fuzzy->addFuzzyRule(fuzzyRule01);
-
-  // Building FuzzyRule "IF Input = safe THEN TuneBuzz = average"
-  // Instantiating a FuzzyRuleAntecedent objects
-  FuzzyRuleAntecedent *ifInputSafe = new FuzzyRuleAntecedent();
-  ifInputSafe->joinSingle(safe);
-  FuzzyRuleConsequent *thenTuneBuzzAverage = new FuzzyRuleConsequent();
-  thenTuneBuzzAverage->addOutput(average);
-  FuzzyRule *fuzzyRule02 = new FuzzyRule(2, ifInputSafe, thenTuneBuzzAverage);
-  fuzzy->addFuzzyRule(fuzzyRule02);
-
-  // Building FuzzyRule "IF Input = big THEN TuneBuzz = high"
-  // Instantiating a FuzzyRuleAntecedent objects
-  FuzzyRuleAntecedent *ifInputBig = new FuzzyRuleAntecedent();
-  ifInputBig->joinSingle(big);
-  FuzzyRuleConsequent *thenTuneBuzzFast = new FuzzyRuleConsequent();
-  thenTuneBuzzFast->addOutput(fast);
-  FuzzyRule *fuzzyRule03 = new FuzzyRule(3, ifInputBig, thenTuneBuzzFast);
-  fuzzy->addFuzzyRule(fuzzyRule03);
-
-  //-------------------------------------------------------------------------------------------------
   // Input ppmhch4
-  FuzzyInput *ppmhch4 = new FuzzyInput(2);
+  FuzzyInput *ppmhch4 = new FuzzyInput(1);
   FuzzySet *ppmhch4_small = new FuzzySet(0, 10, 20, 30);
   ppmhch4->addFuzzySet(ppmhch4_small);
   FuzzySet *ppmhch4_safe = new FuzzySet(30, 40, 50, 60);
@@ -152,6 +102,54 @@ void setup_fuzzy()
   FuzzySet *ppmhch4_big = new FuzzySet(60, 70, 80, 100);
   ppmhch4->addFuzzySet(ppmhch4_big);
   fuzzy->addFuzzyInput(ppmhch4);
+
+  // Instantiating a FuzzyOutput objects
+  FuzzyOutput *tune_buzz1 = new FuzzyOutput(1);
+  FuzzySet *slow1 = new FuzzySet(0, 1000, 1000, 2000);
+  tune_buzz1->addFuzzySet(slow1);
+  FuzzySet *average1 = new FuzzySet(1000, 2000, 3000, 4000);
+  tune_buzz1->addFuzzySet(average1);
+  FuzzySet *fast1 = new FuzzySet(3000, 4000, 4500, 5000);
+  tune_buzz1->addFuzzySet(fast1);
+  fuzzy->addFuzzyOutput(tune_buzz1);
+
+  // Building FuzzyRule "IF Input = small THEN TuneBuzz = slow"
+  // Instantiating a FuzzyRuleAntecedent objects
+  FuzzyRuleAntecedent *ifInputSmall1 = new FuzzyRuleAntecedent();
+  ifInputSmall1->joinSingle(ppmhch4_small);
+  FuzzyRuleConsequent *thenTuneBuzzSlow1 = new FuzzyRuleConsequent();
+  thenTuneBuzzSlow1->addOutput(slow1);
+  FuzzyRule *fuzzyRule01 = new FuzzyRule(1, ifInputSmall1, thenTuneBuzzSlow1);
+  fuzzy->addFuzzyRule(fuzzyRule01);
+
+  // Building FuzzyRule "IF Input = safe THEN TuneBuzz = average"
+  // Instantiating a FuzzyRuleAntecedent objects
+  FuzzyRuleAntecedent *ifInputSafe1 = new FuzzyRuleAntecedent();
+  ifInputSafe1->joinSingle(ppmhch4_safe);
+  FuzzyRuleConsequent *thenTuneBuzzAverage1 = new FuzzyRuleConsequent();
+  thenTuneBuzzAverage1->addOutput(average1);
+  FuzzyRule *fuzzyRule02 = new FuzzyRule(2, ifInputSafe1, thenTuneBuzzAverage1);
+  fuzzy->addFuzzyRule(fuzzyRule02);
+
+  // Building FuzzyRule "IF Input = big THEN TuneBuzz = high"
+  // Instantiating a FuzzyRuleAntecedent objects
+  FuzzyRuleAntecedent *ifInputBig1 = new FuzzyRuleAntecedent();
+  ifInputBig1->joinSingle(ppmhch4_big);
+  FuzzyRuleConsequent *thenTuneBuzzFast1 = new FuzzyRuleConsequent();
+  thenTuneBuzzFast1->addOutput(fast1);
+  FuzzyRule *fuzzyRule03 = new FuzzyRule(3, ifInputBig1, thenTuneBuzzFast1);
+  fuzzy->addFuzzyRule(fuzzyRule03);
+
+  //-------------------------------------------------------------------------------------------------
+  // Input ppmco
+  FuzzyInput *ppmco = new FuzzyInput(2);
+  FuzzySet *ppmco_small = new FuzzySet(0, 10, 20, 30);
+  ppmco->addFuzzySet(ppmco_small);
+  FuzzySet *ppmco_safe = new FuzzySet(30, 40, 50, 60);
+  ppmco->addFuzzySet(ppmco_safe);
+  FuzzySet *ppmco_big = new FuzzySet(60, 70, 80, 100);
+  ppmco->addFuzzySet(ppmco_big);
+  fuzzy->addFuzzyInput(ppmco);
 
   // Instantiating a FuzzyOutput objects
   FuzzyOutput *tune_buzz2 = new FuzzyOutput(2);
@@ -166,77 +164,29 @@ void setup_fuzzy()
   // Building FuzzyRule "IF Input = small THEN TuneBuzz = slow"
   // Instantiating a FuzzyRuleAntecedent objects
   FuzzyRuleAntecedent *ifInputSmall2 = new FuzzyRuleAntecedent();
-  ifInputSmall2->joinSingle(ppmhch4_small);
+  ifInputSmall2->joinSingle(ppmco_small);
   FuzzyRuleConsequent *thenTuneBuzzSlow2 = new FuzzyRuleConsequent();
   thenTuneBuzzSlow2->addOutput(slow2);
-  FuzzyRule *fuzzyRule012 = new FuzzyRule(1, ifInputSmall2, thenTuneBuzzSlow2);
-  fuzzy->addFuzzyRule(fuzzyRule012);
+  FuzzyRule *fuzzyRule11 = new FuzzyRule(1, ifInputSmall2, thenTuneBuzzSlow2);
+  fuzzy->addFuzzyRule(fuzzyRule11);
 
   // Building FuzzyRule "IF Input = safe THEN TuneBuzz = average"
   // Instantiating a FuzzyRuleAntecedent objects
   FuzzyRuleAntecedent *ifInputSafe2 = new FuzzyRuleAntecedent();
-  ifInputSafe2->joinSingle(ppmhch4_safe);
+  ifInputSafe2->joinSingle(ppmco_safe);
   FuzzyRuleConsequent *thenTuneBuzzAverage2 = new FuzzyRuleConsequent();
   thenTuneBuzzAverage2->addOutput(average2);
-  FuzzyRule *fuzzyRule022 = new FuzzyRule(2, ifInputSafe2, thenTuneBuzzAverage2);
-  fuzzy->addFuzzyRule(fuzzyRule022);
+  FuzzyRule *fuzzyRule12 = new FuzzyRule(2, ifInputSafe2, thenTuneBuzzAverage2);
+  fuzzy->addFuzzyRule(fuzzyRule12);
 
   // Building FuzzyRule "IF Input = big THEN TuneBuzz = high"
   // Instantiating a FuzzyRuleAntecedent objects
   FuzzyRuleAntecedent *ifInputBig2 = new FuzzyRuleAntecedent();
-  ifInputBig2->joinSingle(ppmhch4_big);
+  ifInputBig2->joinSingle(ppmco_big);
   FuzzyRuleConsequent *thenTuneBuzzFast2 = new FuzzyRuleConsequent();
   thenTuneBuzzFast2->addOutput(fast2);
-  FuzzyRule *fuzzyRule032 = new FuzzyRule(3, ifInputBig2, thenTuneBuzzFast2);
-  fuzzy->addFuzzyRule(fuzzyRule032);
-
-  //-------------------------------------------------------------------------------------------------
-  // Input ppmco
-  FuzzyInput *ppmco = new FuzzyInput(3);
-  FuzzySet *ppmco_small = new FuzzySet(0, 10, 20, 30);
-  ppmco->addFuzzySet(ppmco_small);
-  FuzzySet *ppmco_safe = new FuzzySet(30, 40, 50, 60);
-  ppmco->addFuzzySet(ppmco_safe);
-  FuzzySet *ppmco_big = new FuzzySet(60, 70, 80, 100);
-  ppmco->addFuzzySet(ppmco_big);
-  fuzzy->addFuzzyInput(ppmco);
-
-  // Instantiating a FuzzyOutput objects
-  FuzzyOutput *tune_buzz3 = new FuzzyOutput(3);
-  FuzzySet *slow3 = new FuzzySet(0, 1000, 1000, 2000);
-  tune_buzz3->addFuzzySet(slow3);
-  FuzzySet *average3 = new FuzzySet(1000, 2000, 3000, 4000);
-  tune_buzz3->addFuzzySet(average3);
-  FuzzySet *fast3 = new FuzzySet(3000, 4000, 4500, 5000);
-  tune_buzz3->addFuzzySet(fast3);
-  fuzzy->addFuzzyOutput(tune_buzz3);
-
-  // Building FuzzyRule "IF Input = small THEN TuneBuzz = slow"
-  // Instantiating a FuzzyRuleAntecedent objects
-  FuzzyRuleAntecedent *ifInputSmall3 = new FuzzyRuleAntecedent();
-  ifInputSmall3->joinSingle(ppmco_small);
-  FuzzyRuleConsequent *thenTuneBuzzSlow3 = new FuzzyRuleConsequent();
-  thenTuneBuzzSlow3->addOutput(slow3);
-  FuzzyRule *fuzzyRule013 = new FuzzyRule(1, ifInputSmall3, thenTuneBuzzSlow3);
-  fuzzy->addFuzzyRule(fuzzyRule013);
-
-  // Building FuzzyRule "IF Input = safe THEN TuneBuzz = average"
-  // Instantiating a FuzzyRuleAntecedent objects
-  FuzzyRuleAntecedent *ifInputSafe3 = new FuzzyRuleAntecedent();
-  ifInputSafe3->joinSingle(ppmco_safe);
-  FuzzyRuleConsequent *thenTuneBuzzAverage3 = new FuzzyRuleConsequent();
-  thenTuneBuzzAverage3->addOutput(average3);
-  FuzzyRule *fuzzyRule023 = new FuzzyRule(2, ifInputSafe3, thenTuneBuzzAverage3);
-  fuzzy->addFuzzyRule(fuzzyRule023);
-
-  // Building FuzzyRule "IF Input = big THEN TuneBuzz = high"
-  // Instantiating a FuzzyRuleAntecedent objects
-  FuzzyRuleAntecedent *ifInputBig3 = new FuzzyRuleAntecedent();
-  ifInputBig3->joinSingle(ppmco_big);
-  FuzzyRuleConsequent *thenTuneBuzzFast3 = new FuzzyRuleConsequent();
-  thenTuneBuzzFast3->addOutput(fast3);
-  FuzzyRule *fuzzyRule033 = new FuzzyRule(3, ifInputBig3, thenTuneBuzzFast3);
-  fuzzy->addFuzzyRule(fuzzyRule033);
+  FuzzyRule *fuzzyRule13 = new FuzzyRule(3, ifInputBig2, thenTuneBuzzFast2);
+  fuzzy->addFuzzyRule(fuzzyRule13);
 
   //-------------------------------------------------------------------------------------------------
 }
@@ -288,13 +238,6 @@ void setup()
   Serial.print("Connecting to ");
   Serial.println(ssid);
 
-  // Tampilkan pesan ke OLED
-  display.clearDisplay();
-  display.setTextColor(WHITE);
-  display.setTextSize(1);
-  display.setCursor(0, 0);
-  display.println("Sensor Data");
-  display.display();
   Serial.println("WiFi connected.");
   Serial.println("IP address: ");
   Serial.println(WiFi.localIP());
@@ -315,6 +258,11 @@ void setup()
   while (!LoRa.begin(BAND))
   {
     Serial.println(".");
+    display.setTextColor(WHITE);
+    display.setTextSize(1);
+    display.setCursor(0, 0);
+    display.println("Menguhubungkan LoRa...");
+    display.display();
     delay(500);
   }
   LoRa.setTxPower(TX_POWER);
@@ -324,7 +272,7 @@ void setup()
   LoRa.enableCrc();
   Serial.println("LoRa Receiver Ready!");
 
-    // bunyikan buzzer
+  // bunyikan buzzer
   tone(BUZZER, 1000);
   delay(1000);
   noTone(BUZZER);
@@ -383,9 +331,8 @@ void loop()
     ppmco_float = ppmco.toFloat();
 
     // Set input
-    fuzzy->setInput(1, temp_float);
-    fuzzy->setInput(2, ppmch4_float);
-    fuzzy->setInput(3, ppmco_float);
+    fuzzy->setInput(1, ppmch4_float);
+    fuzzy->setInput(2, ppmco_float);
 
     // Running the Fuzzification
     fuzzy->fuzzify();
@@ -393,33 +340,39 @@ void loop()
     // Running the Defuzzification
     output1 = fuzzy->defuzzify(1);
     output2 = fuzzy->defuzzify(2);
-    output3 = fuzzy->defuzzify(3);
   }
   // memberikan peringatan
 
-  if (temp_float > 30 or ppmch4_float > 30 or ppmco_float > 30)
+  if (ppmch4_float > 30 or ppmco_float > 30)
   {
-    if (output1 > output2 and output1 > output3)
+    if (output1 > output2)
     {
       Serial.print("Frekuensi Buzzer1: ");
       Serial.println(output1);
       bunyi_buzzer(output1);
+
+      // tampilkan frekuensi buzzer di oled
+      display.print("Frekuensi Buzzer1: ");
+      display.println(output1);
+      display.print(" Hz");
     }
-    else if (output2 > output1 and output2 > output3)
+    else if (output2 > output1)
     {
       Serial.print("Frekuensi Buzzer2: ");
       Serial.println(output2);
       bunyi_buzzer(output2);
-    }
-    else if (output3 > output1 and output3 > output2)
-    {
-      Serial.print("Frekuensi Buzzer3: ");
-      Serial.println(output3);
-      bunyi_buzzer(output3);
+
+      // tampilkan frekuensi buzzer di oled
+      display.print("Frekuensi Buzzer1: ");
+      display.println(output1);
+      display.print(" Hz");
     }
     else
     {
       Serial.print("Aman");
+      // tampilkan frekuensi buzzer di oled
+      display.print("Frekuensi Buzzer1: 0 Hz");
     }
   }
+  display.display();
 }
