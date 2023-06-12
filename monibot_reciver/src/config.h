@@ -15,7 +15,7 @@
 // NETWORKING
 const char *ssid = "MyASUS";
 const char *password = "hy12345678";
-const char *host = "172.16.141.160";
+const char *host = "192.168.84.240";
 const int port = 80;
 
 // LORA
@@ -42,6 +42,6 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 // FUZZY
 Fuzzy *fuzzy = new Fuzzy();
 
-float temp_float, humd_float, ppmch4_float, ppmco_float, output1, output2, output3;
-
+float temp_float, humd_float, ppmch4_float, ppmco_float, output1, output2;
+int count = 0;
 #endif // MONIBOT_TRANSMITTER_CONFIG_H_

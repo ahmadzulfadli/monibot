@@ -49,7 +49,7 @@ void setup()
   mq4.setR0(calcR04 / 10);
   Serial.println("  done!.");
 
-  if (isinf(calcR04))
+  /* if (isinf(calcR04))
   {
     Serial.println("Warning: Conection issue founded, R0 is infite (Open circuit detected) please check your "
                    "wiring and supply");
@@ -62,8 +62,8 @@ void setup()
                    "check your wiring and supply");
     while (1)
       ;
-  }
-  // mq4.serialDebug(true);
+  } */
+  mq4.serialDebug(true);
 
   // MQ7
   mq7.setRegressionMethod(1); //_PPM =  a*ratio^b
@@ -82,7 +82,7 @@ void setup()
   mq7.setR0(calcR07 / 10);
   Serial.println("  done!.");
 
-  if (isinf(calcR07))
+  /* if (isinf(calcR07))
   {
     Serial.println("Warning: Conection issue founded, R0 is infite (Open circuit detected) please check your "
                    "wiring and supply");
@@ -95,8 +95,8 @@ void setup()
                    "check your wiring and supply");
     while (1)
       ;
-  }
-  // mq7.serialDebug(true);
+  } */
+  mq7.serialDebug(true);
 
   // DHT
   dht.begin();
@@ -107,7 +107,7 @@ void loop()
   // MILIS
   unsigned long currentMillis = millis();
   static unsigned long previousMillis = 0;
-  const long interval = 30000;
+  const long interval = 10000;
 
   if (currentMillis - previousMillis >= interval)
   {

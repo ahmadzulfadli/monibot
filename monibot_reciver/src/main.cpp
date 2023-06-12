@@ -340,6 +340,8 @@ void loop()
     // Running the Defuzzification
     output1 = fuzzy->defuzzify(1);
     output2 = fuzzy->defuzzify(2);
+
+    count++;
   }
   // memberikan peringatan
 
@@ -347,32 +349,29 @@ void loop()
   {
     if (output1 > output2)
     {
-      Serial.print("Frekuensi Buzzer1: ");
-      Serial.println(output1);
       bunyi_buzzer(output1);
 
       // tampilkan frekuensi buzzer di oled
-      display.print("Frekuensi Buzzer1: ");
-      display.println(output1);
-      display.print(" Hz");
+      display.print("FrekBuzz: ");
+      display.print(output1);
+      display.println(" Hz");
     }
     else if (output2 > output1)
     {
-      Serial.print("Frekuensi Buzzer2: ");
-      Serial.println(output2);
       bunyi_buzzer(output2);
 
       // tampilkan frekuensi buzzer di oled
-      display.print("Frekuensi Buzzer1: ");
-      display.println(output1);
-      display.print(" Hz");
-    }
-    else
-    {
-      Serial.print("Aman");
-      // tampilkan frekuensi buzzer di oled
-      display.print("Frekuensi Buzzer1: 0 Hz");
+      display.print("FrekBuzz: ");
+      display.print(output2);
+      display.println(" Hz");
     }
   }
+  else
+  {
+    display.println("FrekBuzz: 0 Hz");
+  }
+
+  display.print("Data ke-");
+  display.println(count);
   display.display();
 }
