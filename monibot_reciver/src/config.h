@@ -13,9 +13,9 @@
 #include <Fuzzy.h>
 
 // NETWORKING
-const char *ssid = "MyASUS";
-const char *password = "hy12345678";
-const char *host = "192.168.84.240";
+const char *ssid = "n19corp";
+const char *password = "11111111";
+const char *host = "192.168.192.190";
 const int port = 80;
 
 // LORA

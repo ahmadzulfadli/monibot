@@ -3,18 +3,6 @@
 // tampilkan data ke serial monitor
 void tampilkan_Data(String temp, String humd, String ppmch4, String ppmco)
 {
-  Serial.print("Suhu: ");
-  Serial.print(temp);
-  Serial.print("C");
-  Serial.print(" | Kelembaban: ");
-  Serial.print(humd);
-  Serial.print("%");
-  Serial.print(" | MQ4: ");
-  Serial.print(ppmch4);
-  Serial.print(" | MQ7: ");
-  Serial.print(ppmco);
-  Serial.println();
-
   // Tampilkan dan data sensor ke OLED
   display.clearDisplay();
   display.setTextSize(1);
@@ -107,7 +95,7 @@ void setup_fuzzy()
   FuzzyOutput *tune_buzz1 = new FuzzyOutput(1);
   FuzzySet *slow1 = new FuzzySet(0, 1000, 1000, 2000);
   tune_buzz1->addFuzzySet(slow1);
-  FuzzySet *average1 = new FuzzySet(1000, 2000, 3000, 4000);
+  FuzzySet *average1 = new FuzzySet(2000, 2000, 3000, 4000);
   tune_buzz1->addFuzzySet(average1);
   FuzzySet *fast1 = new FuzzySet(3000, 4000, 4500, 5000);
   tune_buzz1->addFuzzySet(fast1);
@@ -315,9 +303,6 @@ void loop()
     String ppmch4 = data[2];
     String ppmco = data[3];
 
-    Serial.print("' with RSSI ");
-    Serial.println(LoRa.packetRssi());
-
     // tampilkan data ke lcd
     tampilkan_Data(temp, humd, ppmch4, ppmco);
 
@@ -330,9 +315,29 @@ void loop()
     ppmch4_float = ppmch4.toFloat();
     ppmco_float = ppmco.toFloat();
 
+    // Set limit co and ch4
+    float input_ch4, input_co;
+    if (ppmch4_float > 100)
+    {
+      input_ch4 = 100;
+    }
+    else
+    {
+      input_ch4 = ppmch4_float;
+    }
+
+    if (ppmco_float > 100)
+    {
+      input_co = 100;
+    }
+    else
+    {
+      input_co = ppmco_float;
+    }
+
     // Set input
-    fuzzy->setInput(1, ppmch4_float);
-    fuzzy->setInput(2, ppmco_float);
+    fuzzy->setInput(1, input_ch4);
+    fuzzy->setInput(2, input_co);
 
     // Running the Fuzzification
     fuzzy->fuzzify();
@@ -343,8 +348,8 @@ void loop()
 
     count++;
   }
-  // memberikan peringatan
 
+  // memberikan peringatan
   if (ppmch4_float > 30 or ppmco_float > 30)
   {
     if (output1 > output2)

@@ -134,11 +134,8 @@ if ($data) {
                 <div class="row row-eq-spacing-lg">
                     <div class="col-lg-12">
                         <div class="card">
-                            <h2 class="card-title">Teknik Elektro UIN SUSKA Riau</h2>
-                            ...
-                        </div>
-                        <div class="content">
-                            ...
+                            <h2 class="card-title">MONIBOT</h2>
+                            Robot ini dirancang untuk memonitoring lokasi tambang dengan menggunakan sensor MQ-4, MQ-7, dan DHT22. Robot akan mengumpulkan data gas metana (CH4) dan karbon monoksida (CO) menggunakan sensor MQ-4 dan MQ-7, serta suhu dan kelembaban menggunakan sensor DHT22.
                         </div>
                     </div>
                 </div>

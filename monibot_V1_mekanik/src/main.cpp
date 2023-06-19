@@ -259,6 +259,7 @@ void setUpPinModes()
 
 void setup(void)
 {
+    WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0); // disable brownout detector
     setUpPinModes();
     // Serial.begin(115200);
 

@@ -9,6 +9,8 @@
 #include <ESPAsyncWebServer.h>
 #include <iostream>
 #include <sstream>
+#include "soc/soc.h"          // disable brownout problems
+#include "soc/rtc_cntl_reg.h" // disable brownout problems
 #include <ESP32Servo.h>
 
 #define PAN_PIN 14
@@ -66,8 +68,8 @@ const int PWMLightChannel = 3;
 #define HREF_GPIO_NUM 23
 #define PCLK_GPIO_NUM 22
 
-const char *ssid = "MyASUS";
-const char *password = "hy12345678";
+const char *ssid = "19corp";
+const char *password = "UINSUSKA2003";
 
 AsyncWebServer server(80);
 AsyncWebSocket wsCamera("/Camera");

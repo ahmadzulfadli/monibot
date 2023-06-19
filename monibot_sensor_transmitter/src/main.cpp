@@ -116,26 +116,14 @@ void loop()
     // DHT22
     float temp = dht.readTemperature();
     float humd = dht.readHumidity();
-    Serial.print("Temperature: ");
-    Serial.print(temp);
-    Serial.println(" *C");
-    Serial.print("Humidity: ");
-    Serial.print(humd);
-    Serial.println(" %");
 
     // MQ4
     mq4.update();
     float mq4_ppm = mq4.readSensor();
-    Serial.print("MQ4: ");
-    Serial.print(mq4_ppm);
-    Serial.println(" ppm");
 
     // MQ7
     mq7.update();
     float mq7_ppm = mq7.readSensor();
-    Serial.print("MQ7: ");
-    Serial.print(mq7_ppm);
-    Serial.println(" ppm");
 
     // LORA DATA
     String LoRaData = String(temp);
