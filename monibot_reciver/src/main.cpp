@@ -19,7 +19,36 @@ void tampilkan_Data(String temp, String humd, String ppmch4, String ppmco)
   display.println("MQ7: " + String(ppmco));
 }
 
-// kiriman data ke web server
+  // kiriman data ke web server
+void kirimDataWebMonibot(String temp, String humd, String ppmch4, String ppmco)
+{
+  // Prepare the data query parameters
+  String queryParams = "mode=save&temp=" + String(temp) + "&humd=" + String(humd) + "&ppmch4=" + String(ppmch4) + "&ppmco=" + String(ppmco);
+
+  // Create the complete URL with query parameters
+  String requestUrl = apiEndpoint + "?" + queryParams;
+  // Make the HTTP GET request
+  HTTPClient http;
+  http.begin(requestUrl);
+
+  // Send the GET request
+  int httpResponseCode = http.GET();
+
+  if (httpResponseCode > 0)
+  {
+      Serial.printf("HTTP Response code: %d\n", httpResponseCode);
+      String response = http.getString();
+      Serial.println(response);
+  }
+  else
+  {
+      Serial.printf("HTTP GET request failed, error: %s\n", http.errorToString(httpResponseCode).c_str());
+  }
+
+  http.end();
+}
+
+// kiriman data ke web server localhost
 void kirim_Data(String temp, String humd, String ppmch4, String ppmco)
 {
   // koneksi ke web client
@@ -306,8 +335,11 @@ void loop()
     // tampilkan data ke lcd
     tampilkan_Data(temp, humd, ppmch4, ppmco);
 
-    // pengiriman nilai sensor ke web server
-    kirim_Data(temp, humd, ppmch4, ppmco);
+    // pengiriman nilai sensor ke web server localhost
+    // kirim_Data(temp, humd, ppmch4, ppmco);
+
+    // pengiriman nilai sensor ke web server monibot
+    kirimDataWebMonibot(temp, humd, ppmch4, ppmco);
 
     // rubah tipe variabel string ke float
     temp_float = temp.toFloat();

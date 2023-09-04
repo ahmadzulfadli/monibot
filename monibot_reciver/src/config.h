@@ -6,6 +6,8 @@
 #include <SPI.h>
 #include <LoRa.h>
 
+#include <HTTPClient.h>
+
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
@@ -17,6 +19,9 @@ const char *ssid = "n19corp";
 const char *password = "11111111";
 const char *host = "192.168.192.190";
 const int port = 80;
+
+//WEBSERVER MONIBOT
+String apiEndpoint = "https://ahmadzulfadli.my.id/inputData";
 
 // LORA
 #define SS 5
